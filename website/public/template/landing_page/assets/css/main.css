@@ -1422,6 +1422,104 @@ p {
   }
 }
 
+@media (max-width: 767px) {
+  .navbar-area .navbar {
+    padding: 12px 0;
+  }
+
+  .navbar-brand span {
+    font-size: 15px !important;
+    gap: 8px !important;
+  }
+
+  .navbar-brand span > span:first-child {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .navbar-toggler {
+    margin-left: auto;
+  }
+
+  .login-nav-btn {
+    height: 38px;
+    min-width: auto;
+    padding: 0 16px;
+    font-size: 14px;
+    margin-left: 0;
+  }
+
+  .hero-section {
+    padding: 92px 0 28px;
+    background-size: cover;
+  }
+
+  .hero-section .container,
+  .about-section .container,
+  .footer .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .hero-section .hero-content,
+  .about-section .about-content {
+    padding: 0 4px;
+  }
+
+  .hero-section .hero-content h1 {
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 18px;
+    word-break: break-word;
+  }
+
+  .hero-section .hero-content p {
+    font-size: 16px;
+    line-height: 1.55;
+    margin-bottom: 20px;
+    padding-right: 0;
+  }
+
+  .hero-section .hero-img {
+    display: none;
+  }
+
+  .hero-section .hero-content .scroll-bottom {
+    position: static;
+    margin-top: 14px;
+  }
+
+  .about-section.pt-150,
+  .login-section.pt-120 {
+    padding-top: 70px;
+  }
+
+  .about-section .about-img,
+  .about-section .about-img-2 {
+    display: none;
+  }
+
+  .about-section .about-content ul li {
+    font-size: 16px;
+    padding-left: 30px;
+    margin-bottom: 16px;
+  }
+
+  .login-section .login-panel {
+    width: 100%;
+  }
+
+  .login-section .login-panel,
+  .login-section .about-content .login-panel {
+    padding: 18px;
+  }
+
+  .login-section .about-content .login-panel input,
+  .login-section .about-content .login-panel .login-submit-btn {
+    height: 48px;
+  }
+}
+
 /* ======= footer css ======= */
 .footer {
   background-image: url("../img/footer/footer-bg.svg");
