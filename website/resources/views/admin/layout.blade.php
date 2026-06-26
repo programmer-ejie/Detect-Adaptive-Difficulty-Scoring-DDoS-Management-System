@@ -30,6 +30,89 @@
     .sidebar-logout {
       padding: 0 24px 24px;
     }
+
+    .m-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .b-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .b-brand:hover {
+      background: rgba(24, 144, 255, 0.08);
+      transform: translateX(2px);
+    }
+
+    .sidebar-brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    }
+
+    .sidebar-brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sidebar-brand-text .brand-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1f2937;
+      letter-spacing: -0.3px;
+    }
+
+    .sidebar-brand-text .brand-subtitle {
+      font-size: 10px;
+      color: #1890ff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pc-item .pc-micon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+      margin-right: 8px;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .pc-item .pc-micon i {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .pc-link {
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .pc-link:hover .pc-micon {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
@@ -45,7 +128,13 @@
     <div class="navbar-wrapper">
       <div class="m-header">
         <a href="{{ route('admin.dashboard') }}" class="b-brand text-primary">
-          <img src="{{ asset('template/admin/dist/assets/images/logo-dark.svg') }}" class="img-fluid logo-lg" alt="DDoS Sentinel">
+          <div class="sidebar-brand-icon">
+            <i class="ti ti-shield"></i>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="brand-name">DDoS Sentinel</span>
+            <span class="brand-subtitle">Security</span>
+          </div>
         </a>
       </div>
       <div class="navbar-content">
@@ -80,7 +169,7 @@
           </li>
           <li class="pc-item">
             <a href="{{ route('admin.mitigation') }}" class="pc-link {{ $page === 'mitigation' ? 'active' : '' }}">
-              <span class="pc-micon"><i class="ti ti-shield-bolt"></i></span>
+              <span class="pc-micon"><i class="ti ti-shield-check"></i></span>
               <span class="pc-mtext">Mitigation</span>
             </a>
           </li>
