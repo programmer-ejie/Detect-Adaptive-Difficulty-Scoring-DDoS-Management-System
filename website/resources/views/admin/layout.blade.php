@@ -113,6 +113,28 @@
     .pc-link:hover .pc-micon {
       transform: scale(1.1);
     }
+
+    .pc-item.pc-caption {
+      padding: 12px 24px 8px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pc-item.pc-caption label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0;
+      flex: 1;
+    }
+
+    .pc-item.pc-caption i {
+      font-size: 14px;
+      color: #d1d5db;
+    }
   </style>
 </head>
 <body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
@@ -139,6 +161,10 @@
       </div>
       <div class="navbar-content">
         <ul class="pc-navbar">
+          <li class="pc-item pc-caption">
+            <label>Main</label>
+            <i class="ti ti-home"></i>
+          </li>
           <li class="pc-item">
             <a href="{{ route('admin.dashboard') }}" class="pc-link {{ $page === 'dashboard' ? 'active' : '' }}">
               <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
@@ -172,6 +198,11 @@
               <span class="pc-micon"><i class="ti ti-shield-check"></i></span>
               <span class="pc-mtext">Mitigation</span>
             </a>
+          </li>
+
+          <li class="pc-item pc-caption">
+            <label>Configuration</label>
+            <i class="ti ti-adjustments"></i>
           </li>
           <li class="pc-item">
             <a href="{{ route('admin.settings') }}" class="pc-link {{ $page === 'settings' ? 'active' : '' }}">

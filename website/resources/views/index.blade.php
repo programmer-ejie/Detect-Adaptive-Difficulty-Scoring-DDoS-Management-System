@@ -396,7 +396,7 @@
                         style="height:56px;border-radius:20px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;"
                       />
                     </div>
-                    <button type="submit" class="main-btn login-submit-btn" style="width:100%;border-radius:20px;">
+                    <button type="submit" class="main-btn login-submit-btn" style="width:100%;border-radius:20px;padding:14px 32px;font-size:15px;font-weight:600;">
                       Log In
                     </button>
                   </div>
