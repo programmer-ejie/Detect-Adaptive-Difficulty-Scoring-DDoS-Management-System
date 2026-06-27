@@ -161,9 +161,15 @@
       </div>
       <div class="navbar-content">
         <ul class="pc-navbar">
-          <li class="pc-item pc-caption">
+
+               <li class="pc-item pc-caption">
+            <label></label>
+            <i class="ti ti-radar"></i>
+          </li>
+
+               <li class="pc-item pc-caption">
             <label>Main</label>
-            <i class="ti ti-home"></i>
+            <i class="ti ti-radar"></i>
           </li>
           <li class="pc-item">
             <a href="{{ route('admin.dashboard') }}" class="pc-link {{ $page === 'dashboard' ? 'active' : '' }}">
