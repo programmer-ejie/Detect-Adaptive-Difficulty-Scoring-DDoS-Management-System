@@ -37,9 +37,13 @@
         justify-content: center;
         font-size: 24px;
         margin-bottom: 12px;
-        background: linear-gradient(135deg, #5864FF 0%, #4356E6 100%);
         color: white;
     }
+    .stat-card .stat-icon.red { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+    .stat-card .stat-icon.orange { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+    .stat-card .stat-icon.blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+    .stat-card .stat-icon.green { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+
     .stat-label {
         font-size: 12px;
         font-weight: 600;
@@ -563,7 +567,7 @@
     <div class="col-md-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body p-4">
-                <div class="stat-icon"><i class="ti ti-alert-octagon"></i></div>
+                <div class="stat-icon red"><i class="ti ti-alert-octagon"></i></div>
                 <div class="stat-label">Critical Alerts</div>
                 <div class="stat-value text-critical" id="critical-count">24</div>
                 <span class="stat-badge" style="background: #fee2e2; color: #7f1d1d;">Needs review</span>
@@ -574,7 +578,7 @@
     <div class="col-md-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body p-4">
-                <div class="stat-icon"><i class="ti ti-alert-triangle"></i></div>
+                <div class="stat-icon orange"><i class="ti ti-alert-triangle"></i></div>
                 <div class="stat-label">High Severity</div>
                 <div class="stat-value text-high" id="high-count">48</div>
                 <span class="stat-badge" style="background: #fef3c7; color: #92400e;">Active</span>
@@ -585,9 +589,9 @@
     <div class="col-md-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body p-4">
-                <div class="stat-icon"><i class="ti ti-check-circle"></i></div>
+                <div class="stat-icon blue"><i class="ti ti-shield-check"></i></div>
                 <div class="stat-label">Acknowledged</div>
-                <div class="stat-value text-acknowledged" id="acknowledged-count">342</div>
+                <div class="stat-value text-acknowledged" id="acknowledged-count">1</div>
                 <span class="stat-badge" style="background: #dbeafe; color: #0c4a6e;">Tracked</span>
                 <div class="stat-description">Assigned to operator</div>
             </div>
@@ -596,7 +600,7 @@
     <div class="col-md-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body p-4">
-                <div class="stat-icon"><i class="ti ti-check"></i></div>
+                <div class="stat-icon green"><i class="ti ti-check"></i></div>
                 <div class="stat-label">Resolved</div>
                 <div class="stat-value text-resolved" id="resolved-count">1,847</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">Closed</span>

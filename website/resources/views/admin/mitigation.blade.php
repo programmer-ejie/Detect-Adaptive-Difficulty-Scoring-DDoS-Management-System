@@ -529,7 +529,7 @@
     <div class="col-md-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body p-4">
-                <div class="stat-icon"><i class="ti ti-automatic"></i></div>
+                <div class="stat-icon"><i class="ti ti-git-branch"></i></div>
                 <div class="stat-label">Mitigation Mode</div>
                 <div class="stat-value text-auto" id="mode-count">Auto</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">On</span>
