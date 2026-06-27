@@ -25,10 +25,30 @@
 
     .pc-sidebar .pc-navbar {
       flex: 1 1 auto;
+      padding-top: 4px;
     }
 
     .sidebar-logout {
-      padding: 0 24px 24px;
+      padding: 12px 24px 24px;
+      margin-top: 8px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .sidebar-logout .logout-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-logout .logout-label i {
+      font-size: 14px;
+      color: #d1d5db;
     }
 
     .m-header {
@@ -115,10 +135,14 @@
     }
 
     .pc-item.pc-caption {
-      padding: 12px 24px 8px 24px;
+      padding: 14px 24px 6px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .pc-item.pc-caption:first-of-type {
+      padding-top: 4px;
     }
 
     .pc-item.pc-caption label {
@@ -134,6 +158,77 @@
     .pc-item.pc-caption i {
       font-size: 14px;
       color: #d1d5db;
+    }
+
+    .pc-item .pc-link {
+      padding: 8px 24px;
+      border-radius: 0;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .pc-item .pc-link:hover {
+      background: rgba(24, 144, 255, 0.04);
+      color: #1f2937;
+    }
+
+    .pc-item .pc-link.active {
+      background: rgba(24, 144, 255, 0.08);
+      border-right: 3px solid #1890ff;
+      color: #1890ff;
+    }
+
+    .pc-item .pc-link.active .pc-micon i {
+      color: #1890ff;
+    }
+
+    .pc-item .pc-link.active .pc-mtext {
+      color: #1890ff;
+      font-weight: 600;
+    }
+
+    .sidebar-logout .btn-logout {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      border: none;
+      transition: all 0.3s ease;
+      background: #fee2e2;
+      color: #7f1d1d;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .sidebar-logout .btn-logout:hover {
+      background: #fecaca;
+      transform: translateY(-1px);
+    }
+
+    .sidebar-logout .btn-logout i {
+      font-size: 16px;
+    }
+
+    .pc-sidebar .navbar-content {
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .pc-sidebar .navbar-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .pc-sidebar .navbar-content::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+
+    .pc-sidebar .pc-navbar .pc-item .pc-link .pc-mtext {
+      font-size: 14px;
     }
   </style>
 </head>
@@ -162,12 +257,8 @@
       <div class="navbar-content">
         <ul class="pc-navbar">
 
-               <li class="pc-item pc-caption">
-            <label></label>
-            <i class="ti ti-radar"></i>
-          </li>
-
-               <li class="pc-item pc-caption">
+          <!-- MAIN -->
+          <li class="pc-item pc-caption">
             <label>Main</label>
             <i class="ti ti-radar"></i>
           </li>
@@ -178,6 +269,7 @@
             </a>
           </li>
 
+          <!-- MONITORING -->
           <li class="pc-item pc-caption">
             <label>Monitoring</label>
             <i class="ti ti-radar"></i>
@@ -195,6 +287,7 @@
             </a>
           </li>
 
+          <!-- DEFENSE -->
           <li class="pc-item pc-caption">
             <label>Defense</label>
             <i class="ti ti-shield"></i>
@@ -206,6 +299,7 @@
             </a>
           </li>
 
+          <!-- CONFIGURATION -->
           <li class="pc-item pc-caption">
             <label>Configuration</label>
             <i class="ti ti-adjustments"></i>
@@ -218,13 +312,13 @@
           </li>
 
         </ul>
-        <div class="sidebar-logout mt-auto">
-          <div class="pc-caption">
+        <div class="sidebar-logout">
+          <div class="logout-label">
             <label>Session</label>
             <i class="ti ti-power"></i>
           </div>
-          <a href="{{ url('/#login') }}" class="btn btn-danger w-100">
-            <i class="ti ti-logout me-2"></i>Logout
+          <a href="{{ url('/#login') }}" class="btn-logout">
+            <i class="ti ti-logout"></i> Logout
           </a>
         </div>
       </div>
