@@ -30,6 +30,142 @@
       rel="stylesheet"
       href="{{ asset('template/landing_page/assets/css/main.css') }}"
     />
+    <style>
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+        color: #4b5563;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #162447;
+        line-height: 1.3;
+      }
+      h1 { font-size: 42px; }
+      h2 { font-size: 30px; }
+      h3 { font-size: 20px; }
+      p { font-size: 16px; color: #6b7280; }
+
+      .hero-content h1 {
+        font-size: 44px;
+        line-height: 1.2;
+        margin-bottom: 20px;
+      }
+      .hero-content p {
+        font-size: 18px;
+        line-height: 1.7;
+        margin-bottom: 28px;
+        color: #6b7280;
+      }
+      .section-title h2 {
+        font-size: 32px;
+        margin-bottom: 16px;
+      }
+      .section-title p {
+        font-size: 17px;
+        color: #6b7280;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+      .single-feature h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      .single-feature p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #6b7280;
+      }
+      .about-content p {
+        font-size: 16px;
+        line-height: 1.7;
+      }
+      .about-content ul li {
+        font-size: 15px;
+        padding: 6px 0;
+      }
+      .footer-widget h3 {
+        font-size: 18px;
+        color: #fff;
+        margin-bottom: 20px;
+      }
+      .footer-widget .links li a {
+        font-size: 14px;
+        color: rgba(255,255,255,0.7);
+      }
+      .footer-widget p.desc {
+        font-size: 15px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.7;
+      }
+      .navbar-brand span {
+        font-size: 18px;
+      }
+      .navbar-nav .nav-item a {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .login-nav-btn {
+        font-size: 14px;
+        padding: 8px 22px;
+      }
+      .main-btn {
+        font-size: 15px;
+        padding: 12px 32px;
+        font-weight: 600;
+        border-radius: 999px;
+      }
+      .border-btn {
+        font-size: 15px;
+        padding: 12px 32px;
+      }
+      .login-panel label {
+        font-size: 14px;
+      }
+      .login-panel input {
+        font-size: 15px;
+        height: 48px;
+      }
+      .login-submit-btn {
+        font-size: 15px;
+        padding: 12px 32px;
+      }
+      .scroll-bottom {
+        font-size: 28px;
+      }
+      .stat-label {
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+      .stat-value {
+        font-size: 26px;
+      }
+
+      @media (max-width: 768px) {
+        h1 { font-size: 32px; }
+        h2 { font-size: 26px; }
+        h3 { font-size: 18px; }
+        .hero-content h1 { font-size: 32px; }
+        .hero-content p { font-size: 16px; }
+        .section-title h2 { font-size: 26px; }
+        .section-title p { font-size: 15px; }
+        .navbar-brand span { font-size: 16px; }
+        .main-btn { font-size: 14px; padding: 10px 24px; }
+        .login-panel input { font-size: 14px; height: 44px; }
+        .stat-value { font-size: 22px; }
+      }
+      @media (max-width: 576px) {
+        h1 { font-size: 28px; }
+        h2 { font-size: 22px; }
+        .hero-content h1 { font-size: 28px; }
+        .hero-content p { font-size: 15px; }
+        .section-title h2 { font-size: 22px; }
+        .single-feature h3 { font-size: 16px; }
+        .single-feature p { font-size: 14px; }
+        .stat-value { font-size: 20px; }
+      }
+    </style>
   </head>
   <body>
     <div class="preloader">
@@ -56,9 +192,9 @@
             <div class="col-lg-12">
               <nav class="navbar navbar-expand-lg">
                 <a class="navbar-brand" href="#home">
-                  <span style="display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:#162447;">
-                    <span style="width:42px;height:42px;border-radius:999px;background:#5864FF;color:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(88,100,255,.22);">
-                      <i class="lni lni-shield"></i>
+                  <span style="display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:#162447;">
+                    <span style="width:38px;height:38px;border-radius:999px;background:#5864FF;color:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(88,100,255,.22);">
+                      <i class="lni lni-shield" style="font-size:18px;"></i>
                     </span>
                     <span>DDoS Sentinel</span>
                   </span>
@@ -375,28 +511,28 @@
                 <form action="{{ route('admin.dashboard') }}" method="GET">
                   <div style="display:grid;gap:16px;">
                     <div>
-                      <label for="login-email" class="mb-2" style="font-weight:700;color:#162447;">Gmail / Email</label>
+                      <label for="login-email" class="mb-2" style="font-weight:600;color:#162447;font-size:14px;">Email Address</label>
                       <input
                         id="login-email"
                         type="email"
                         name="email"
-                        placeholder="admin@gmail.com"
+                        placeholder="admin@example.com"
                         class="form-control"
-                        style="height:56px;border-radius:20px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;"
+                        style="height:48px;border-radius:999px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;font-size:15px;"
                       />
                     </div>
                     <div>
-                      <label for="login-password" class="mb-2" style="font-weight:700;color:#162447;">Password</label>
+                      <label for="login-password" class="mb-2" style="font-weight:600;color:#162447;font-size:14px;">Password</label>
                       <input
                         id="login-password"
                         type="password"
                         name="password"
-                        placeholder="Enter password"
+                        placeholder="Enter your password"
                         class="form-control"
-                        style="height:56px;border-radius:20px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;"
+                        style="height:48px;border-radius:999px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;font-size:15px;"
                       />
                     </div>
-                    <button type="submit" class="main-btn login-submit-btn" style="width:100%;border-radius:20px;padding:14px 32px;font-size:15px;font-weight:600;">
+                    <button type="submit" class="main-btn login-submit-btn" style="width:100%;border-radius:999px;padding:12px 32px;font-size:15px;font-weight:600;background:#5864FF;color:#fff;border:none;cursor:pointer;transition:all 0.3s;">
                       Log In
                     </button>
                   </div>
@@ -435,15 +571,15 @@
               <div class="footer-widget">
                 <div class="logo mb-30">
                   <a href="#home">
-                    <span style="display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:#fff;">
-                      <span style="width:42px;height:42px;border-radius:999px;background:#fff;color:#5864FF;display:inline-flex;align-items:center;justify-content:center;">
-                        <i class="lni lni-shield"></i>
+                    <span style="display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:#fff;">
+                      <span style="width:38px;height:38px;border-radius:999px;background:#fff;color:#5864FF;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="lni lni-shield" style="font-size:18px;"></i>
                       </span>
                       <span>DDoS Sentinel</span>
                     </span>
                   </a>
                 </div>
-                <p class="desc mb-30 text-white">
+                <p class="desc mb-30 text-white" style="font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7;">
                   Intelligent DDoS detection and mitigation using router logs,
                   flow analysis, and adaptive response logic.
                 </p>
