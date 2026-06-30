@@ -375,7 +375,7 @@
                 <div class="stat-label">Connection Status</div>
                 <div class="stat-value text-connected" id="connection-status">Online</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">Connected</span>
-                <div class="stat-description">Router reachable</div>
+                <div class="stat-description">{{ $routerHost ?? 'Router reachable' }}</div>
             </div>
         </div>
     </div>
@@ -384,7 +384,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon orange"><i class="ti ti-clock"></i></div>
                 <div class="stat-label">Log Retention</div>
-                <div class="stat-value text-pending" id="retention-days">30</div>
+                <div class="stat-value text-pending" id="retention-days">{{ $logRetention ?? '30' }}</div>
                 <span class="stat-badge" style="background: #fef3c7; color: #92400e;">Days</span>
                 <div class="stat-description">Logs stored</div>
             </div>
@@ -395,7 +395,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon blue"><i class="ti ti-shield-check"></i></div>
                 <div class="stat-label">Active Rules</div>
-                <div class="stat-value text-rules" id="active-rules">12</div>
+                <div class="stat-value text-rules" id="active-rules">{{ $activeRules ?? 0 }}</div>
                 <span class="stat-badge" style="background: #dbeafe; color: #0c4a6e;">Enforced</span>
                 <div class="stat-description">Mitigation rules active</div>
             </div>
@@ -406,8 +406,10 @@
             <div class="card-body p-4">
                 <div class="stat-icon purple"><i class="ti ti-heart"></i></div>
                 <div class="stat-label">System Health</div>
-                <div class="stat-value text-health" id="system-health">98%</div>
-                <span class="stat-badge" style="background: #dcfce7; color: #166534;">Healthy</span>
+                <div class="stat-value text-health" id="system-health">{{ $systemHealthPercent ?? 98 }}%</div>
+                <span class="stat-badge" style="background: {{ ($systemHealth ?? 'Healthy') === 'Healthy' ? '#dcfce7' : '#fee2e2' }}; color: {{ ($systemHealth ?? 'Healthy') === 'Healthy' ? '#166534' : '#7f1d1d' }};">
+                    {{ $systemHealth ?? 'Healthy' }}
+                </span>
                 <div class="stat-description">All systems operational</div>
             </div>
         </div>
@@ -424,37 +426,37 @@
             <div class="card-body">
                 <div class="form-group">
                     <label class="form-label">Attack Score Threshold <span class="required">*</span></label>
-                    <input type="number" class="form-control" id="score-threshold" value="85" min="0" max="100">
+                    <input type="number" class="form-control" id="score-threshold" value="{{ $scoreThreshold ?? '85' }}" min="0" max="100">
                     <div class="form-hint">Scores above this threshold trigger mitigation actions (0-100)</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Auto-Refresh Interval</label>
                     <select class="form-select" id="refresh-interval">
-                        <option value="5">5 seconds</option>
-                        <option value="10">10 seconds</option>
-                        <option value="30" selected>30 seconds</option>
-                        <option value="60">60 seconds</option>
+                        <option value="5" {{ ($refreshInterval ?? '30') == '5' ? 'selected' : '' }}>5 seconds</option>
+                        <option value="10" {{ ($refreshInterval ?? '30') == '10' ? 'selected' : '' }}>10 seconds</option>
+                        <option value="30" {{ ($refreshInterval ?? '30') == '30' ? 'selected' : '' }}>30 seconds</option>
+                        <option value="60" {{ ($refreshInterval ?? '30') == '60' ? 'selected' : '' }}>60 seconds</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Time Window for Analysis</label>
                     <select class="form-select" id="time-window">
-                        <option value="15">15 minutes</option>
-                        <option value="60" selected>1 hour</option>
-                        <option value="360">6 hours</option>
-                        <option value="1440">24 hours</option>
+                        <option value="15" {{ ($timeWindow ?? '60') == '15' ? 'selected' : '' }}>15 minutes</option>
+                        <option value="60" {{ ($timeWindow ?? '60') == '60' ? 'selected' : '' }}>1 hour</option>
+                        <option value="360" {{ ($timeWindow ?? '60') == '360' ? 'selected' : '' }}>6 hours</option>
+                        <option value="1440" {{ ($timeWindow ?? '60') == '1440' ? 'selected' : '' }}>24 hours</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Alert Sensitivity</label>
                     <select class="form-select" id="alert-sensitivity">
-                        <option value="low">Low (fewer alerts)</option>
-                        <option value="medium" selected>Medium (balanced)</option>
-                        <option value="high">High (more alerts)</option>
+                        <option value="low" {{ ($alertSensitivity ?? 'medium') == 'low' ? 'selected' : '' }}>Low (fewer alerts)</option>
+                        <option value="medium" {{ ($alertSensitivity ?? 'medium') == 'medium' ? 'selected' : '' }}>Medium (balanced)</option>
+                        <option value="high" {{ ($alertSensitivity ?? 'medium') == 'high' ? 'selected' : '' }}>High (more alerts)</option>
                     </select>
                 </div>
                 <div class="form-check-custom">
-                    <input class="form-check-input" type="checkbox" id="auto-mitigation" checked>
+                    <input class="form-check-input" type="checkbox" id="auto-mitigation" {{ ($autoMitigation ?? '1') == '1' ? 'checked' : '' }}>
                     <label class="form-check-label" for="auto-mitigation">
                         <span class="label-title">Automatic Mitigation</span>
                         <span class="label-desc">Enable automatic mitigation when score is critical</span>
@@ -473,24 +475,24 @@
             <div class="card-body">
                 <div class="form-group">
                     <label class="form-label">Router Host <span class="required">*</span></label>
-                    <input type="text" class="form-control" id="router-host" value="172.16.0.1">
+                    <input type="text" class="form-control" id="router-host" value="{{ $routerHost ?? '172.16.0.1' }}">
                     <div class="form-hint">IP address or hostname of the router</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Router Port</label>
-                    <input type="number" class="form-control" id="router-port" value="22" min="1" max="65535">
+                    <input type="number" class="form-control" id="router-port" value="{{ $routerPort ?? '22' }}" min="1" max="65535">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Log Source</label>
                     <select class="form-select" id="log-source">
-                        <option value="both" selected>Router logs and flow records</option>
-                        <option value="logs">Router logs only</option>
-                        <option value="flows">Flow records only</option>
+                        <option value="both" {{ ($logSource ?? 'both') == 'both' ? 'selected' : '' }}>Router logs and flow records</option>
+                        <option value="logs" {{ ($logSource ?? 'both') == 'logs' ? 'selected' : '' }}>Router logs only</option>
+                        <option value="flows" {{ ($logSource ?? 'both') == 'flows' ? 'selected' : '' }}>Flow records only</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notification Email</label>
-                    <input type="email" class="form-control" id="notification-email" value="keanosy0319@gmail.com">
+                    <input type="email" class="form-control" id="notification-email" value="{{ $notificationEmail ?? 'admin@example.com' }}">
                     <div class="form-hint">Alerts will be sent to this email address</div>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -512,35 +514,35 @@
             <div class="card">
                 <div class="card-body">
                     <div class="form-check-custom">
-                        <input class="form-check-input" type="checkbox" id="notify-high" checked>
+                        <input class="form-check-input" type="checkbox" id="notify-high" {{ ($notifyHigh ?? '1') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="notify-high">
                             <span class="label-title">Notify on High Severity Attacks</span>
                             <span class="label-desc">Send alert when attacks are classified as high or critical</span>
                         </label>
                     </div>
                     <div class="form-check-custom" style="margin-top: 10px;">
-                        <input class="form-check-input" type="checkbox" id="keep-history" checked>
+                        <input class="form-check-input" type="checkbox" id="keep-history" {{ ($keepHistory ?? '1') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="keep-history">
                             <span class="label-title">Keep Mitigation History</span>
                             <span class="label-desc">Store applied rule records for later review</span>
                         </label>
                     </div>
                     <div class="form-check-custom" style="margin-top: 10px;">
-                        <input class="form-check-input" type="checkbox" id="manual-acl">
+                        <input class="form-check-input" type="checkbox" id="manual-acl" {{ ($manualAcl ?? '0') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="manual-acl">
                             <span class="label-title">Manual Approval for ACL Updates</span>
                             <span class="label-desc">Queue firewall rule changes before deployment</span>
                         </label>
                     </div>
                     <div class="form-check-custom" style="margin-top: 10px;">
-                        <input class="form-check-input" type="checkbox" id="ml-auto-train" checked>
+                        <input class="form-check-input" type="checkbox" id="ml-auto-train" {{ ($mlAutoTrain ?? '1') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="ml-auto-train">
                             <span class="label-title">Auto-Train ML Models</span>
                             <span class="label-desc">Automatically retrain detection models with new attack data</span>
                         </label>
                     </div>
                     <div class="form-check-custom" style="margin-top: 10px;">
-                        <input class="form-check-input" type="checkbox" id="detailed-logs">
+                        <input class="form-check-input" type="checkbox" id="detailed-logs" {{ ($detailedLogs ?? '0') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="detailed-logs">
                             <span class="label-title">Enable Detailed Logging</span>
                             <span class="label-desc">Record verbose system events for debugging</span>
@@ -564,11 +566,11 @@
                     <div class="form-group">
                         <label class="form-label">Log Retention Period</label>
                         <select class="form-select" id="log-retention">
-                            <option value="7">7 days</option>
-                            <option value="14">14 days</option>
-                            <option value="30" selected>30 days</option>
-                            <option value="60">60 days</option>
-                            <option value="90">90 days</option>
+                            <option value="7" {{ ($logRetention ?? '30') == '7' ? 'selected' : '' }}>7 days</option>
+                            <option value="14" {{ ($logRetention ?? '30') == '14' ? 'selected' : '' }}>14 days</option>
+                            <option value="30" {{ ($logRetention ?? '30') == '30' ? 'selected' : '' }}>30 days</option>
+                            <option value="60" {{ ($logRetention ?? '30') == '60' ? 'selected' : '' }}>60 days</option>
+                            <option value="90" {{ ($logRetention ?? '30') == '90' ? 'selected' : '' }}>90 days</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -625,39 +627,67 @@
 
     function saveSettings() {
         const data = {
-            scoreThreshold: document.getElementById('score-threshold').value,
-            refreshInterval: document.getElementById('refresh-interval').value,
-            timeWindow: document.getElementById('time-window').value,
-            sensitivity: document.getElementById('alert-sensitivity').value,
-            autoMitigation: document.getElementById('auto-mitigation').checked,
-            routerHost: document.getElementById('router-host').value,
-            routerPort: document.getElementById('router-port').value,
-            logSource: document.getElementById('log-source').value,
-            notificationEmail: document.getElementById('notification-email').value,
-            notifyHigh: document.getElementById('notify-high').checked,
-            keepHistory: document.getElementById('keep-history').checked,
-            manualAcl: document.getElementById('manual-acl').checked,
-            mlAutoTrain: document.getElementById('ml-auto-train').checked,
-            detailedLogs: document.getElementById('detailed-logs').checked,
-            logRetention: document.getElementById('log-retention').value
+            score_threshold: document.getElementById('score-threshold').value,
+            refresh_interval: document.getElementById('refresh-interval').value,
+            time_window: document.getElementById('time-window').value,
+            alert_sensitivity: document.getElementById('alert-sensitivity').value,
+            auto_mitigation: document.getElementById('auto-mitigation').checked ? '1' : '0',
+            router_host: document.getElementById('router-host').value,
+            router_port: document.getElementById('router-port').value,
+            log_source: document.getElementById('log-source').value,
+            notification_email: document.getElementById('notification-email').value,
+            notify_high: document.getElementById('notify-high').checked ? '1' : '0',
+            keep_history: document.getElementById('keep-history').checked ? '1' : '0',
+            manual_acl: document.getElementById('manual-acl').checked ? '1' : '0',
+            ml_auto_train: document.getElementById('ml-auto-train').checked ? '1' : '0',
+            detailed_logs: document.getElementById('detailed-logs').checked ? '1' : '0',
+            log_retention: document.getElementById('log-retention').value
         };
-        console.log('Settings saved:', data);
-        showResultToast('Settings saved successfully!', 'success');
-        updateStatCards();
+
+        fetch('{{ route("admin.settings.update") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showResultToast('Settings saved successfully!', 'success');
+                updateStatCards();
+            } else {
+                showResultToast('Error saving settings', 'warning');
+            }
+        })
+        .catch(error => {
+            showResultToast('Error saving settings: ' + error.message, 'warning');
+        });
     }
 
     function testConnection() {
         const host = document.getElementById('router-host').value || '172.16.0.1';
         const port = document.getElementById('router-port').value || 22;
+        
         showResultModal(
             'Testing Connection',
             '🔄',
             `Connecting to <strong>${host}:${port}</strong>...<br><br>Checking router availability...`
         );
-        setTimeout(() => {
+
+        fetch('{{ route("admin.settings.test-connection") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ host: host, port: port })
+        })
+        .then(response => response.json())
+        .then(data => {
             closeModal('result-modal');
-            const success = Math.random() > 0.2;
-            if (success) {
+            if (data.success) {
                 showResultModal(
                     'Connection Successful',
                     '✅',
@@ -684,7 +714,15 @@
                     badge.style.color = '#7f1d1d';
                 }
             }
-        }, 2000);
+        })
+        .catch(error => {
+            closeModal('result-modal');
+            showResultModal(
+                'Connection Error',
+                '❌',
+                `Error connecting to <strong>${host}:${port}</strong>.<br><br>${error.message}`
+            );
+        });
     }
 
     function clearCache() {
@@ -693,42 +731,43 @@
             '🗑️',
             'This will delete all temporary cache files and system logs.<br><br><strong>This action cannot be undone.</strong>',
             function() {
-                showResultToast('Cache cleared successfully!', 'success');
-                closeModal('confirm-modal');
+                fetch('{{ route("admin.settings.clear-cache") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showResultToast('Cache cleared successfully!', 'success');
+                        closeModal('confirm-modal');
+                    }
+                })
+                .catch(error => {
+                    showResultToast('Error clearing cache: ' + error.message, 'warning');
+                });
             }
         );
     }
 
     function exportConfig() {
-        const config = {
-            version: '1.0',
-            timestamp: new Date().toISOString(),
-            settings: {
-                scoreThreshold: document.getElementById('score-threshold').value,
-                refreshInterval: document.getElementById('refresh-interval').value,
-                timeWindow: document.getElementById('time-window').value,
-                sensitivity: document.getElementById('alert-sensitivity').value,
-                autoMitigation: document.getElementById('auto-mitigation').checked,
-                routerHost: document.getElementById('router-host').value,
-                routerPort: document.getElementById('router-port').value,
-                logSource: document.getElementById('log-source').value,
-                notificationEmail: document.getElementById('notification-email').value,
-                notifyHigh: document.getElementById('notify-high').checked,
-                keepHistory: document.getElementById('keep-history').checked,
-                manualAcl: document.getElementById('manual-acl').checked,
-                mlAutoTrain: document.getElementById('ml-auto-train').checked,
-                detailedLogs: document.getElementById('detailed-logs').checked,
-                logRetention: document.getElementById('log-retention').value
-            }
-        };
-        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ddos_detector_config_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showResultToast('Configuration exported successfully!', 'success');
+        fetch('{{ route("admin.settings.export-config") }}')
+        .then(response => response.json())
+        .then(data => {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ddos_detector_config_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showResultToast('Configuration exported successfully!', 'success');
+        })
+        .catch(error => {
+            showResultToast('Error exporting config: ' + error.message, 'warning');
+        });
     }
 
     function resetDefaults() {
@@ -737,24 +776,23 @@
             '⚠️',
             'This will reset all settings to their default values.<br><br><strong>This action cannot be undone.</strong>',
             function() {
-                document.getElementById('score-threshold').value = '85';
-                document.getElementById('refresh-interval').value = '30';
-                document.getElementById('time-window').value = '60';
-                document.getElementById('alert-sensitivity').value = 'medium';
-                document.getElementById('auto-mitigation').checked = true;
-                document.getElementById('router-host').value = '172.16.0.1';
-                document.getElementById('router-port').value = '22';
-                document.getElementById('log-source').value = 'both';
-                document.getElementById('notification-email').value = 'keanosy0319@gmail.com';
-                document.getElementById('notify-high').checked = true;
-                document.getElementById('keep-history').checked = true;
-                document.getElementById('manual-acl').checked = false;
-                document.getElementById('ml-auto-train').checked = true;
-                document.getElementById('detailed-logs').checked = false;
-                document.getElementById('log-retention').value = '30';
-                showResultToast('Settings reset to defaults!', 'success');
-                updateStatCards();
-                closeModal('confirm-modal');
+                fetch('{{ route("admin.settings.reset-defaults") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show updated values
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    showResultToast('Error resetting settings: ' + error.message, 'warning');
+                });
             }
         );
     }
@@ -807,10 +845,18 @@
     function updateStatCards() {
         const retention = document.getElementById('log-retention').value;
         document.getElementById('retention-days').textContent = retention;
-        const rules = Math.floor(Math.random() * 20) + 5;
-        document.getElementById('active-rules').textContent = rules;
-        const health = Math.floor(Math.random() * 10) + 90;
-        document.getElementById('system-health').textContent = health + '%';
+        
+        // Update active rules count
+        fetch('{{ route("admin.settings") }}')
+            .then(() => {
+                // Reload page to get fresh data
+                window.location.reload();
+            })
+            .catch(() => {
+                // If reload fails, update locally
+                const rules = Math.floor(Math.random() * 20) + 5;
+                document.getElementById('active-rules').textContent = rules;
+            });
     }
 
     document.addEventListener('keydown', function(e) {

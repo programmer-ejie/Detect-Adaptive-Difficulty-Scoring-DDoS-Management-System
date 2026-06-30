@@ -40,6 +40,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/alert', [AlertController::class, 'index'])->name('alert');
         Route::get('/mitigation', [MitigationController::class, 'index'])->name('mitigation');
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+
+        // =============================================
+        // Settings API Routes
+        // =============================================
+        Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/settings/test-connection', [SettingsController::class, 'testConnection'])->name('settings.test-connection');
+        Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
+        Route::post('/settings/reset-defaults', [SettingsController::class, 'resetDefaults'])->name('settings.reset-defaults');
+        Route::get('/settings/export-config', [SettingsController::class, 'exportConfig'])->name('settings.export-config');
     });
 });
 
