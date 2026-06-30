@@ -508,8 +508,14 @@
                 </p>
               </div>
               <div class="login-panel" style="background:rgba(88,100,255,.08);border:1px solid rgba(88,100,255,.14);border-radius:28px;padding:24px;box-shadow:0 18px 40px rgba(88,100,255,.08);">
-                <form action="{{ route('admin.dashboard') }}" method="GET">
+                <form action="{{ route('login.perform') }}" method="POST">
+                  @csrf
                   <div style="display:grid;gap:16px;">
+                    @if ($errors->any())
+                      <div class="alert alert-danger mb-0" style="border-radius:16px;">
+                        {{ $errors->first() }}
+                      </div>
+                    @endif
                     <div>
                       <label for="login-email" class="mb-2" style="font-weight:600;color:#162447;font-size:14px;">Email Address</label>
                       <input
@@ -519,18 +525,41 @@
                         placeholder="admin@example.com"
                         class="form-control"
                         style="height:48px;border-radius:999px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;font-size:15px;"
+                        value="{{ old('email') }}"
+                        required
                       />
                     </div>
                     <div>
                       <label for="login-password" class="mb-2" style="font-weight:600;color:#162447;font-size:14px;">Password</label>
-                      <input
-                        id="login-password"
-                        type="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        class="form-control"
-                        style="height:48px;border-radius:999px;border:1px solid rgba(88,100,255,.18);padding:0 18px;background:#fff;color:#162447;font-size:15px;"
-                      />
+                      <div style="position:relative;">
+                        <input
+                          id="login-password"
+                          type="password"
+                          name="password"
+                          placeholder="Enter your password"
+                          class="form-control"
+                          style="height:48px;border-radius:999px;border:1px solid rgba(88,100,255,.18);padding:0 56px 0 18px;background:#fff;color:#162447;font-size:15px;"
+                          required
+                        />
+                        <button
+                          type="button"
+                          id="toggle-password"
+                          aria-label="Show password"
+                          title="Show password"
+                          style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border:none;background:transparent;color:#5864FF;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:2;"
+                        >
+                          <svg id="toggle-password-icon-open" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          <svg id="toggle-password-icon-closed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;">
+                            <path d="M17.94 17.94A10.95 10.95 0 0 1 12 20c-7 0-11-8-11-8a21.7 21.7 0 0 1 5.2-6.08"></path>
+                            <path d="M1 1l22 22"></path>
+                            <path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-4.47"></path>
+                            <path d="M14.12 5.08A10.94 10.94 0 0 1 22 12s-1.22 2.48-3.57 4.66"></path>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <button type="submit" class="main-btn login-submit-btn" style="width:100%;border-radius:999px;padding:12px 32px;font-size:15px;font-weight:600;background:#5864FF;color:#fff;border:none;cursor:pointer;transition:all 0.3s;">
                       Log In
@@ -631,5 +660,26 @@
     <script src="{{ asset('template/landing_page/assets/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('template/landing_page/assets/js/wow.min.js') }}"></script>
     <script src="{{ asset('template/landing_page/assets/js/main.js') }}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('login-password');
+        const toggleButton = document.getElementById('toggle-password');
+        const iconOpen = document.getElementById('toggle-password-icon-open');
+        const iconClosed = document.getElementById('toggle-password-icon-closed');
+
+        if (!passwordInput || !toggleButton || !iconOpen || !iconClosed) {
+          return;
+        }
+
+        toggleButton.addEventListener('click', function () {
+          const isHidden = passwordInput.type === 'password';
+          passwordInput.type = isHidden ? 'text' : 'password';
+          iconOpen.style.display = isHidden ? 'none' : 'block';
+          iconClosed.style.display = isHidden ? 'block' : 'none';
+          toggleButton.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+          toggleButton.setAttribute('title', isHidden ? 'Hide password' : 'Show password');
+        });
+      });
+    </script>
   </body>
 </html>

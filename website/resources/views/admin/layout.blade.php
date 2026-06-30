@@ -317,9 +317,12 @@
             <label>Session</label>
             <i class="ti ti-power"></i>
           </div>
-          <a href="{{ url('/#login') }}" class="btn-logout">
-            <i class="ti ti-logout"></i> Logout
-          </a>
+          <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn-logout">
+              <i class="ti ti-logout"></i> Logout
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -409,7 +412,7 @@
           <li class="dropdown pc-h-item header-user-profile">
             <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
               <img src="{{ asset('template/admin/dist/assets/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar">
-              <span>Keano Sy</span>
+              <span>{{ auth()->user()->name }}</span>
             </a>
             <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
               <div class="dropdown-header">
@@ -418,15 +421,20 @@
                     <img src="{{ asset('template/admin/dist/assets/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar wid-35">
                   </div>
                   <div class="flex-grow-1 ms-3">
-                    <h6 class="mb-1">Keano Sy</h6>
-                    <span>DDoS Sentinel Operator</span>
+                    <h6 class="mb-1">{{ auth()->user()->name }}</h6>
+                    <span>{{ auth()->user()->email }}</span>
                   </div>
                 </div>
               </div>
               <a href="{{ route('admin.dashboard') }}" class="dropdown-item"><i class="ti ti-dashboard"></i><span>Dashboard</span></a>
               <a href="{{ route('admin.analysis') }}" class="dropdown-item"><i class="ti ti-chart-line"></i><span>Analysis</span></a>
               <a href="{{ route('admin.settings') }}" class="dropdown-item"><i class="ti ti-settings"></i><span>Settings</span></a>
-              <a href="{{ url('/#login') }}" class="dropdown-item"><i class="ti ti-power"></i><span>Logout</span></a>
+              <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="dropdown-item" style="width:100%;text-align:left;border:none;background:transparent;">
+                  <i class="ti ti-power"></i><span>Logout</span>
+                </button>
+              </form>
             </div>
           </li>
         </ul>
