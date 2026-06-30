@@ -498,7 +498,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon"><i class="ti ti-ban"></i></div>
                 <div class="stat-label">Blocked IPs</div>
-                <div class="stat-value text-blocked" id="blocked-count">248</div>
+                <div class="stat-value text-blocked" id="blocked-count">{{ $blockedCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">Active</span>
                 <div class="stat-description">Deny list entries</div>
             </div>
@@ -509,7 +509,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon"><i class="ti ti-adjustments"></i></div>
                 <div class="stat-label">Rate Limit Rules</div>
-                <div class="stat-value text-rate" id="rate-count">12</div>
+                <div class="stat-value text-rate" id="rate-count">{{ $rateLimitCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">Enabled</span>
                 <div class="stat-description">Applied to edge router</div>
             </div>
@@ -520,7 +520,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon"><i class="ti ti-shield-check"></i></div>
                 <div class="stat-label">ACL Updates</div>
-                <div class="stat-value text-acl" id="acl-count">6</div>
+                <div class="stat-value text-acl" id="acl-count">{{ $aclCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #fef3c7; color: #92400e;">Pending</span>
                 <div class="stat-description">Awaiting confirmation</div>
             </div>
@@ -531,8 +531,10 @@
             <div class="card-body p-4">
                 <div class="stat-icon"><i class="ti ti-git-branch"></i></div>
                 <div class="stat-label">Mitigation Mode</div>
-                <div class="stat-value text-auto" id="mode-count">Auto</div>
-                <span class="stat-badge" style="background: #dcfce7; color: #166534;">On</span>
+                <div class="stat-value text-auto" id="mode-count">{{ $mitigationMode ?? 'Auto' }}</div>
+                <span class="stat-badge" style="background: {{ ($mitigationStatus ?? 'On') === 'On' ? '#dcfce7' : '#fee2e2' }}; color: {{ ($mitigationStatus ?? 'On') === 'On' ? '#166534' : '#7f1d1d' }};">
+                    {{ $mitigationStatus ?? 'On' }}
+                </span>
                 <div class="stat-description">Rules can be reviewed</div>
             </div>
         </div>
@@ -630,7 +632,7 @@
         <div class="table-header-toolbar">
             <h5>Mitigation Rules</h5>
             <div class="toolbar-right">
-                <span class="count-badge">Showing <span id="rule-count">4</span> rules</span>
+                <span class="count-badge">Showing <span id="rule-count">{{ $rules->count() }}</span> rules</span>
                 <button class="btn btn-sm btn-outline-primary" onclick="refreshRules()" style="padding: 3px 10px; font-size: 11px;">
                     <i class="ti ti-refresh"></i> Refresh
                 </button>
@@ -653,75 +655,70 @@
                             </tr>
                         </thead>
                         <tbody id="rule-tbody">
-                            <tr class="rule-row" data-status="active" data-action="deny" data-id="1">
+                            @forelse($rules as $rule)
+                            @php
+                                $statusMap = [
+                                    'active' => ['class' => 'active', 'label' => 'Active'],
+                                    'review' => ['class' => 'review', 'label' => 'Review'],
+                                    'queued' => ['class' => 'queued', 'label' => 'Queued'],
+                                    'pending' => ['class' => 'pending', 'label' => 'Pending'],
+                                    'expired' => ['class' => 'expired', 'label' => 'Expired'],
+                                ];
+                                $statusData = $statusMap[$rule->status ?? 'pending'] ?? $statusMap['pending'];
+                                $actionLabels = ['deny' => 'Deny', 'rate_limit' => 'Rate Limit', 'acl_update' => 'ACL Update'];
+                                $actionDisplay = $actionLabels[$rule->action ?? 'deny'] ?? 'Deny';
+                            @endphp
+                            <tr class="rule-row" data-status="{{ $rule->status ?? 'pending' }}" data-action="{{ $rule->action ?? 'deny' }}" data-id="{{ $rule->id }}">
                                 <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td>Block UDP amplification source</td>
-                                <td><span class="ip-address">10.23.1.18</span></td>
-                                <td>Deny</td>
-                                <td style="text-align:center;"><span class="status-badge active"><span class="status-dot"></span> Active</span></td>
-                                <td style="text-align:center;">2 min ago</td>
+                                <td>{{ $rule->name ?? 'Unnamed Rule' }}</td>
+                                <td><span class="ip-address">{{ $rule->target_ip ?? '—' }}</span></td>
+                                <td>{{ $actionDisplay }}</td>
                                 <td style="text-align:center;">
-                                    <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
-                                    <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
-                                    <button class="btn-mitigate-action view" onclick="viewRule(this)">View</button>
+                                    <span class="status-badge {{ $statusData['class'] }}">
+                                        <span class="status-dot"></span> {{ $statusData['label'] }}
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">{{ $rule->applied_at?->diffForHumans() ?? 'N/A' }}</td>
+                                <td style="text-align:center;">
+                                    @if(($rule->status ?? 'pending') === 'active')
+                                        <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
+                                        <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
+                                        <button class="btn-mitigate-action view" onclick="viewRule(this)">View</button>
+                                    @else
+                                        <button class="btn-mitigate-action apply" onclick="applyRule(this)">Apply</button>
+                                        <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
+                                        <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
+                                    @endif
                                 </td>
                             </tr>
-                            <tr class="rule-row" data-status="review" data-action="rate_limit" data-id="2">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td>HTTP flood throttling</td>
-                                <td><span class="ip-address">172.16.0.12</span></td>
-                                <td>Rate Limit</td>
-                                <td style="text-align:center;"><span class="status-badge review"><span class="status-dot"></span> Review</span></td>
-                                <td style="text-align:center;">8 min ago</td>
-                                <td style="text-align:center;">
-                                    <button class="btn-mitigate-action apply" onclick="applyRule(this)">Apply</button>
-                                    <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
-                                    <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
+                            @empty
+                            <tr>
+                                <td colspan="7" style="padding: 40px; text-align: center; color: #9ca3af;">
+                                    <i class="ti ti-shield-check" style="font-size: 48px; display: block; margin-bottom: 12px;"></i>
+                                    No mitigation rules found
                                 </td>
                             </tr>
-                            <tr class="rule-row" data-status="queued" data-action="acl_update" data-id="3">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td>Temporary SYN ACL</td>
-                                <td><span class="ip-address">172.16.0.18</span></td>
-                                <td>ACL Update</td>
-                                <td style="text-align:center;"><span class="status-badge queued"><span class="status-dot"></span> Queued</span></td>
-                                <td style="text-align:center;">14 min ago</td>
-                                <td style="text-align:center;">
-                                    <button class="btn-mitigate-action apply" onclick="applyRule(this)">Apply</button>
-                                    <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
-                                    <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
-                                </td>
-                            </tr>
-                            <tr class="rule-row" data-status="pending" data-action="deny" data-id="4">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td>ICMP flood protection</td>
-                                <td><span class="ip-address">192.0.2.88</span></td>
-                                <td>Deny</td>
-                                <td style="text-align:center;"><span class="status-badge pending"><span class="status-dot"></span> Pending</span></td>
-                                <td style="text-align:center;">22 min ago</td>
-                                <td style="text-align:center;">
-                                    <button class="btn-mitigate-action apply" onclick="applyRule(this)">Apply</button>
-                                    <button class="btn-mitigate-action undo" onclick="undoRule(this)">Undo</button>
-                                    <button class="btn-mitigate-action edit" onclick="openEditModal(this)">Edit</button>
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        @if($rules->count() > 5)
         <div class="pagination-wrapper">
-            <span class="page-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+            <span class="page-info">Page <span id="current-page">1</span> of <span id="total-pages">{{ ceil($rules->count() / 5) }}</span></span>
             <div class="page-buttons">
                 <button id="prev-page" onclick="changePage(-1)">Previous</button>
                 <button id="page-1" class="active" onclick="goToPage(1)">1</button>
                 <button id="next-page" onclick="changePage(1)">Next</button>
             </div>
         </div>
+        @endif
     </div>
 </div>
 
+<!-- Block IP Modal -->
 <div class="modal-overlay" id="block-modal" onclick="if(event.target===this) closeModal('block-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -763,6 +760,7 @@
     </div>
 </div>
 
+<!-- Rate Limit Modal -->
 <div class="modal-overlay" id="ratelimit-modal" onclick="if(event.target===this) closeModal('ratelimit-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -801,6 +799,7 @@
     </div>
 </div>
 
+<!-- ACL Modal -->
 <div class="modal-overlay" id="acl-modal" onclick="if(event.target===this) closeModal('acl-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -832,6 +831,7 @@
     </div>
 </div>
 
+<!-- Whitelist Modal -->
 <div class="modal-overlay" id="whitelist-modal" onclick="if(event.target===this) closeModal('whitelist-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -855,6 +855,7 @@
     </div>
 </div>
 
+<!-- Bulk Block Modal -->
 <div class="modal-overlay" id="bulk-block-modal" onclick="if(event.target===this) closeModal('bulk-block-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -883,6 +884,7 @@
     </div>
 </div>
 
+<!-- Edit Modal -->
 <div class="modal-overlay" id="edit-modal" onclick="if(event.target===this) closeModal('edit-modal')">
     <div class="modal-box">
         <div class="modal-header">
@@ -924,6 +926,7 @@
     </div>
 </div>
 
+<!-- View Modal -->
 <div class="modal-overlay" id="view-modal" onclick="if(event.target===this) closeModal('view-modal')">
     <div class="modal-box">
         <div class="modal-header">
