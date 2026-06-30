@@ -9,9 +9,9 @@ use App\Models\SystemUptime;
 use App\Models\TrafficSample;
 use Illuminate\View\View;
 
-class AdminController extends Controller
+class DashboardController extends Controller
 {
-    public function dashboard(): View
+    public function index(): View
     {
         $settings = $this->settingsMap();
         $events = AttackEvent::query()->orderByDesc('occurred_at')->get();
@@ -94,15 +94,15 @@ class AdminController extends Controller
             default => 'LOW',
         };
 
+        // ===== SYSTEM HEALTH VALUES =====
         $routerHealth = $settings['router_health'] ?? 'Healthy';
         $routerHost = $settings['router_host'] ?? 'N/A';
-        $routerUtilization = (int) ($settings['router_utilization'] ?? 0);
-        $cpuUtilization = (int) ($settings['cpu_utilization'] ?? 0);
-        $memoryUsage = (int) ($settings['memory_usage'] ?? 0);
+        $routerUtilization = (int) ($settings['router_utilization'] ?? 92);
+        $cpuUtilization = (int) ($settings['cpu_utilization'] ?? 64);
+        $memoryUsage = (int) ($settings['memory_usage'] ?? 51);
+        // =================================
 
-        // ========== GET UPTIME FROM DATABASE ==========
         $systemUptimeData = $this->getSystemUptime();
-        // ==============================================
 
         return view('admin.dashboard', [
             'activeAttacks' => $activeAttacks,
@@ -122,25 +122,27 @@ class AdminController extends Controller
             'currentBandwidth' => $currentBandwidth,
             'trafficThresholdLast' => $trafficThresholdLast,
             'threatLevel' => $threatLevel,
-            'routerHealth' => $routerHealth,
-            'routerHost' => $routerHost,
-            'routerUtilization' => $routerUtilization,
-            'cpuUtilization' => $cpuUtilization,
-            'memoryUsage' => $memoryUsage,
-            // Uptime data
-            'uptimePercentage' => $systemUptimeData['percentage'],
-            'uptimeFormatted' => $systemUptimeData['formatted'],
-            'uptimeShort' => $systemUptimeData['short'],
-            'uptimeWithIcon' => $systemUptimeData['with_icon'],
-            'uptimeColor' => $systemUptimeData['color'],
-            'uptimeProgress' => $systemUptimeData['progress'],
-            'uptimeStartedAt' => $systemUptimeData['started_at'],
-            'uptimeStatus' => $systemUptimeData['status'],
             'threatScore' => $threatScore,
             'resolvedAlerts' => $resolvedAlerts,
             'totalAlerts' => $totalAlerts,
             'attackTypeLabels' => $attackTypeLabels,
             'attackTypeValues' => $attackTypeValues,
+            
+            // System Health Values
+            'routerHealth' => $routerHealth,
+            'routerHost' => $routerHost,
+            'routerUtilization' => $routerUtilization,
+            'cpuUtilization' => $cpuUtilization,
+            'memoryUsage' => $memoryUsage,
+            
+            // Uptime Values
+            'uptimePercentage' => $systemUptimeData['percentage'],
+            'uptimeFormatted' => $systemUptimeData['formatted'],
+            'uptimeCompact' => $systemUptimeData['compact'], // Add this
+            'uptimeColor' => $systemUptimeData['color'],
+            'uptimeStartedAt' => $systemUptimeData['started_at'],
+            'uptimeStatus' => $systemUptimeData['status'],
+            'uptimeSeconds' => $systemUptimeData['seconds'],
         ]);
     }
 
@@ -149,12 +151,8 @@ class AdminController extends Controller
         return AppSetting::query()->pluck('value', 'key')->all();
     }
 
-    /**
-     * Get system uptime from database
-     */
-    private function getSystemUptime(): array
+   private function getSystemUptime(): array
     {
-        // Get or create uptime record
         $uptime = SystemUptime::first();
         
         if (!$uptime) {
@@ -167,36 +165,20 @@ class AdminController extends Controller
             ]);
         }
 
-        // Update last ping
         $uptime->last_ping_at = now();
         $uptime->save();
-
-        // Simulate occasional small downtimes for realism (local only)
-        if (app()->environment('local')) {
-            $this->simulateDowntime($uptime);
-        }
 
         return [
             'percentage' => $uptime->getUptimePercentage(),
             'formatted' => $uptime->getUptimeFormatted(),
+            'compact' => $uptime->getUptimeCompact(), // Add this
             'short' => $uptime->getUptimeShort(),
             'with_icon' => $uptime->getUptimeWithIcon(),
             'color' => $uptime->getUptimeColor(),
             'progress' => $uptime->getUptimeProgress(),
             'started_at' => $uptime->started_at,
             'status' => $uptime->getStatusBadge(),
+            'seconds' => $uptime->getUptimeSeconds(),
         ];
-    }
-
-    /**
-     * Simulate small downtimes for local development
-     */
-    private function simulateDowntime(SystemUptime $uptime): void
-    {
-        // 1% chance per request to simulate a small downtime
-        if (mt_rand(1, 100) === 1) {
-            $duration = mt_rand(1, 3);
-            $uptime->recordDowntime($duration);
-        }
     }
 }

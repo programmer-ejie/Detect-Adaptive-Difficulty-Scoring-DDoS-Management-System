@@ -193,14 +193,22 @@
         <div class="card-body p-4">
             <div class="stat-icon"><i class="ti ti-clock"></i></div>
             <div class="stat-label">System Uptime</div>
-            <div class="stat-value" id="uptime-display" style="color: {{ $uptimeColor ?? '#5864FF' }}; font-size: 32px; font-variant-numeric: tabular-nums;">
-                {{ $uptimeFormatted ?? '00:00:00' }}
+            
+            <!-- Main Uptime Display - Now showing human readable format -->
+            <div class="stat-value" id="uptime-display" style="color: {{ $uptimeColor ?? '#5864FF' }}; font-size: 18px; font-variant-numeric: tabular-nums; font-weight: 700;">
+                {{ $uptimeFormatted ?? '0s' }}
             </div>
-            <span class="stat-badge" style="background: #E6F0FF; color: #5864FF;">
-                <i class="ti ti-check-circle"></i> Running
+            
+            <!-- Compact format as badge -->
+            <span class="stat-badge" id="uptime-compact" style="background: #E6F0FF; color: #5864FF; font-size: 12px;">
+                <i class="ti ti-clock"></i> 
+                {{ $uptimeCompact ?? '0s' }}
             </span>
-            <div class="stat-description" id="uptime-started">
-                {{ isset($uptimeStartedAt) ? $uptimeStartedAt->format('M d, H:i') : 'N/A' }}
+            
+            <!-- Started At -->
+            <div class="stat-description" id="uptime-started" style="font-size: 11px; color: #9ca3af; margin-top: 6px;">
+                <i class="ti ti-calendar-event" style="font-size: 11px;"></i>
+                Since: {{ isset($uptimeStartedAt) ? $uptimeStartedAt->format('M d, H:i') : 'N/A' }}
             </div>
         </div>
     </div>
@@ -379,7 +387,7 @@
     </div>
 
     <!-- System Health -->
-   <div class="col-md-12 col-xl-4">
+ <div class="col-md-12 col-xl-4">
     <div class="card" style="border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
         <div class="card-body p-4">
             <h5 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 24px;">System Health</h5>
@@ -555,62 +563,94 @@
 
           
       
-          document.addEventListener('DOMContentLoaded', function () {
-              const uptimeDisplay = document.getElementById('uptime-display');
-              const uptimeStarted = document.getElementById('uptime-started');
-              
-              if (!uptimeDisplay) return;
-              
-              // Function to format seconds to HH:MM:SS
-              function formatTime(seconds) {
-                  const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-                  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-                  const s = String(seconds % 60).padStart(2, '0');
-                  return `${h}:${m}:${s}`;
-              }
-              
-              // Function to fetch uptime from server
-              function fetchUptime() {
-                  fetch('/api/uptime')
-                      .then(response => response.json())
-                      .then(data => {
-                          // Update the display with data from database
-                          uptimeDisplay.textContent = data.formatted;
-                          
-                          // Update the started timestamp if available
-                          if (uptimeStarted && data.started_at) {
-                              uptimeStarted.textContent = data.started_at;
+       document.addEventListener('DOMContentLoaded', function () {
+    const uptimeDisplay = document.getElementById('uptime-display');
+    const uptimeCompact = document.getElementById('uptime-compact');
+    const uptimeStarted = document.getElementById('uptime-started');
+    
+    if (!uptimeDisplay) return;
+    
+    // Function to format seconds to human readable format
+    function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        const parts = [];
+        if (days > 0) parts.push(days + 'd');
+        if (hours > 0 || days > 0) parts.push(String(hours).padStart(2, '0') + 'h');
+        if (minutes > 0 || hours > 0 || days > 0) parts.push(String(minutes).padStart(2, '0') + 'm');
+        parts.push(String(secs).padStart(2, '0') + 's');
+        
+        return parts.join(' ');
+    }
+    
+    // Function to format compact version
+    function formatCompact(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        const parts = [];
+        if (days > 0) parts.push(days + 'd');
+        if (hours > 0) parts.push(hours + 'h');
+        if (minutes > 0) parts.push(minutes + 'm');
+        if (parts.length === 0) parts.push(secs + 's');
+        
+        return parts.join(' ');
+    }
+    
+    // Function to fetch uptime from server
+          function fetchUptime() {
+              fetch('/api/uptime')
+                  .then(response => response.json())
+                  .then(data => {
+                      uptimeDisplay.textContent = data.formatted;
+                      if (uptimeCompact) {
+                          uptimeCompact.innerHTML = `<i class="ti ti-clock"></i> ${data.compact}`;
+                      }
+                      if (uptimeStarted && data.started_at) {
+                          uptimeStarted.innerHTML = `<i class="ti ti-calendar-event" style="font-size: 11px;"></i> Since: ${data.started_at}`;
+                      }
+                  })
+                  .catch(error => {
+                      console.log('Uptime fetch error:', error);
+                      // Fallback: increment locally
+                      let currentText = uptimeDisplay.textContent;
+                      if (currentText && currentText !== '0s') {
+                          // Try to parse the current display
+                          let totalSeconds = 0;
+                          const parts = currentText.split(' ');
+                          for (const part of parts) {
+                              if (part.endsWith('d')) totalSeconds += parseInt(part) * 86400;
+                              else if (part.endsWith('h')) totalSeconds += parseInt(part) * 3600;
+                              else if (part.endsWith('m')) totalSeconds += parseInt(part) * 60;
+                              else if (part.endsWith('s')) totalSeconds += parseInt(part);
                           }
-                      })
-                      .catch(error => {
-                          console.log('Uptime fetch error:', error);
-                          // If fetch fails, increment locally as fallback
-                          let currentText = uptimeDisplay.textContent;
-                          if (currentText && currentText !== '00:00:00') {
-                              const parts = currentText.split(':');
-                              if (parts.length === 3) {
-                                  let seconds = parseInt(parts[0]) * 3600 + 
-                                              parseInt(parts[1]) * 60 + 
-                                              parseInt(parts[2]) + 1;
-                                  uptimeDisplay.textContent = formatTime(seconds);
-                              }
+                          totalSeconds++;
+                          uptimeDisplay.textContent = formatUptime(totalSeconds);
+                          if (uptimeCompact) {
+                              uptimeCompact.innerHTML = `<i class="ti ti-clock"></i> ${formatCompact(totalSeconds)}`;
                           }
-                      });
+                      }
+                  });
+          }
+          
+          // Fetch immediately on page load
+          fetchUptime();
+          
+          // Then fetch every second
+          const interval = setInterval(fetchUptime, 1000);
+          
+          // Clean up interval when page is hidden
+          document.addEventListener('visibilitychange', function() {
+              if (document.hidden) {
+                  clearInterval(interval);
               }
-              
-              // Fetch immediately on page load
-              fetchUptime();
-              
-              // Then fetch every second
-              const interval = setInterval(fetchUptime, 1000);
-              
-              // Clean up interval when page is hidden to save resources
-              document.addEventListener('visibilitychange', function() {
-                  if (document.hidden) {
-                      clearInterval(interval);
-                  }
-              });
           });
+      });
 
           function updateSystemHealth() {
           fetch('/api/system-health')
