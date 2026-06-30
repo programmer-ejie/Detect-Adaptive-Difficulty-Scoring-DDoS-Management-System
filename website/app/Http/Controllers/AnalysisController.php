@@ -19,7 +19,7 @@ class AnalysisController extends Controller
         // Stat Cards Data
         $totalFlows = $samples->sum('normal_flows') + $samples->sum('suspicious_flows');
         $attackFlows = $samples->sum('suspicious_flows');
-        $anomalies = $events->where('severity', '>=', 'medium')->count();
+        $anomalies = $events->whereIn('severity', ['high', 'critical'])->count();
         $detectionRate = $totalFlows > 0 ? round(($attackFlows / $totalFlows) * 100, 2) : 0;
         
         // Response Metrics
@@ -29,7 +29,7 @@ class AnalysisController extends Controller
             : 0;
         $meanTimeToResolution = $events->where('status', 'resolved')->avg('sla_minutes') ?? 0;
         
-        // Top Sources
+        // Top Sources (Top 5 attacking IPs)
         $topSources = AttackEvent::query()
             ->selectRaw('source_ip, COUNT(*) as count, MAX(anomaly_score) as max_score, protocol')
             ->groupBy('source_ip', 'protocol')
@@ -41,6 +41,7 @@ class AnalysisController extends Controller
         $protocolDistribution = AttackEvent::query()
             ->selectRaw('COALESCE(protocol, "Unknown") as protocol, COUNT(*) as count')
             ->groupBy('protocol')
+            ->orderByDesc('count')
             ->get();
         
         $protocolLabels = $protocolDistribution->pluck('protocol')->toArray();
@@ -72,22 +73,41 @@ class AnalysisController extends Controller
         
         $systemUptimeData = $this->getSystemUptime();
         
+        // Get percentage comparison for stat cards
+        $previousTotalFlows = $samples->take($samples->count() / 2)->sum('normal_flows') + $samples->take($samples->count() / 2)->sum('suspicious_flows');
+        $totalFlowsChange = $previousTotalFlows > 0 ? round((($totalFlows - $previousTotalFlows) / $previousTotalFlows) * 100) : 0;
+        
         return view('admin.analysis', [
+            // Stat Cards
             'totalFlows' => $totalFlows,
             'attackFlows' => $attackFlows,
             'anomalies' => $anomalies,
             'detectionRate' => $detectionRate,
+            'totalFlowsChange' => $totalFlowsChange,
+            
+            // Response Metrics
             'avgResponseTime' => $avgResponseTime,
             'detectionSuccess' => $detectionSuccess,
             'meanTimeToResolution' => $meanTimeToResolution,
+            
+            // Top Sources
             'topSources' => $topSources,
+            
+            // Protocol Distribution
             'protocolLabels' => $protocolLabels,
             'protocolValues' => $protocolValues,
+            
+            // Recent Activity
             'recentActivities' => $recentActivities,
+            
+            // Traffic Chart
             'trafficCategories' => $trafficCategories,
             'normalFlows' => $normalFlows,
             'suspiciousFlows' => $suspiciousFlows,
+            
+            // Uptime Data
             'uptimeFormatted' => $systemUptimeData['formatted'],
+            'uptimeCompact' => $systemUptimeData['compact'],
             'uptimeColor' => $systemUptimeData['color'],
             'uptimeStartedAt' => $systemUptimeData['started_at'],
             'uptimeSeconds' => $systemUptimeData['seconds'],
@@ -120,6 +140,7 @@ class AnalysisController extends Controller
         return [
             'percentage' => $uptime->getUptimePercentage(),
             'formatted' => $uptime->getUptimeFormatted(),
+            'compact' => $uptime->getUptimeCompact(),
             'short' => $uptime->getUptimeShort(),
             'with_icon' => $uptime->getUptimeWithIcon(),
             'color' => $uptime->getUptimeColor(),

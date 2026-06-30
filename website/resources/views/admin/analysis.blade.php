@@ -75,6 +75,12 @@
       color: #9ca3af;
       margin-top: 10px;
     }
+
+    .severity-critical { background: #fee2e2; color: #991b1b; }
+    .severity-high { background: #fecaca; color: #7f1d1d; }
+    .severity-medium { background: #fef3c7; color: #92400e; }
+    .severity-low { background: #dbeafe; color: #1e40af; }
+    .severity-normal { background: #dcfce7; color: #166534; }
   </style>
 
   <div class="row">
@@ -84,41 +90,52 @@
         <div class="card-body p-4">
           <div class="stat-icon"><i class="ti ti-git-branch"></i></div>
           <div class="stat-label">Total Flows</div>
-          <div class="stat-value">24,580</div>
-          <span class="stat-badge" style="background: #E6F0FF; color: #5864FF;">↑ 12%</span>
-          <div class="stat-description">Compared to yesterday</div>
+          <div class="stat-value">{{ number_format($totalFlows ?? 0) }}</div>
+          <span class="stat-badge" style="background: {{ ($totalFlowsChange ?? 0) > 0 ? '#E6F0FF' : '#fee2e2' }}; color: {{ ($totalFlowsChange ?? 0) > 0 ? '#5864FF' : '#dc2626' }};">
+            {{ ($totalFlowsChange ?? 0) > 0 ? '↑' : '↓' }} {{ abs($totalFlowsChange ?? 0) }}%
+          </span>
+          <div class="stat-description">Compared to previous period</div>
         </div>
       </div>
     </div>
+    
     <div class="col-md-6 col-xl-3">
       <div class="card stat-card">
         <div class="card-body p-4">
           <div class="stat-icon"><i class="ti ti-alert-triangle"></i></div>
           <div class="stat-label">Attack Flows</div>
-          <div class="stat-value">1,248</div>
-          <span class="stat-badge" style="background: #fee2e2; color: #7f1d1d;">Critical</span>
-          <div class="stat-description">Requires immediate action</div>
+          <div class="stat-value">{{ number_format($attackFlows ?? 0) }}</div>
+          <span class="stat-badge" style="background: {{ ($attackFlows ?? 0) > 100 ? '#fee2e2' : '#fef3c7' }}; color: {{ ($attackFlows ?? 0) > 100 ? '#7f1d1d' : '#92400e' }};">
+            {{ ($attackFlows ?? 0) > 100 ? 'Critical' : 'Elevated' }}
+          </span>
+          <div class="stat-description">{{ ($attackFlows ?? 0) > 0 ? 'Requires attention' : 'No attack flows' }}</div>
         </div>
       </div>
     </div>
+    
     <div class="col-md-6 col-xl-3">
       <div class="card stat-card">
         <div class="card-body p-4">
           <div class="stat-icon"><i class="ti ti-ban"></i></div>
           <div class="stat-label">Anomalies</div>
-          <div class="stat-value">342</div>
-          <span class="stat-badge" style="background: #fef3c7; color: #92400e;">Medium</span>
-          <div class="stat-description">Flagged for review</div>
+          <div class="stat-value">{{ number_format($anomalies ?? 0) }}</div>
+          <span class="stat-badge" style="background: {{ ($anomalies ?? 0) > 10 ? '#fef3c7' : '#dcfce7' }}; color: {{ ($anomalies ?? 0) > 10 ? '#92400e' : '#166534' }};">
+            {{ ($anomalies ?? 0) > 10 ? 'Medium' : 'Low' }}
+          </span>
+          <div class="stat-description">{{ ($anomalies ?? 0) > 0 ? 'Flagged for review' : 'No anomalies' }}</div>
         </div>
       </div>
     </div>
+    
     <div class="col-md-6 col-xl-3">
       <div class="card stat-card">
         <div class="card-body p-4">
           <div class="stat-icon"><i class="ti ti-clock"></i></div>
           <div class="stat-label">Detection Rate</div>
-          <div class="stat-value">99.2%</div>
-          <span class="stat-badge" style="background: #dcfce7; color: #166534;">Excellent</span>
+          <div class="stat-value">{{ number_format($detectionRate ?? 0, 1) }}%</div>
+          <span class="stat-badge" style="background: {{ ($detectionRate ?? 0) > 95 ? '#dcfce7' : '#fef3c7' }}; color: {{ ($detectionRate ?? 0) > 95 ? '#166534' : '#92400e' }};">
+            {{ ($detectionRate ?? 0) > 95 ? 'Excellent' : 'Needs Improvement' }}
+          </span>
           <div class="stat-description">Last 24 hours</div>
         </div>
       </div>
@@ -137,6 +154,7 @@
       </div>
     </div>
 
+    <!-- Response Metrics -->
     <div class="col-md-12 col-xl-4">
       <h5 class="mb-3">Response Metrics</h5>
       <div class="card">
@@ -144,37 +162,42 @@
           <div class="mb-3">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <h6 class="text-muted">Avg Response Time</h6>
-              <span style="color: #5864FF; font-weight: 600;">2.3s</span>
+              <span style="color: #5864FF; font-weight: 600;">{{ number_format($avgResponseTime ?? 0, 1) }}s</span>
             </div>
             <div style="height: 6px; background: #E6F0FF; border-radius: 3px; overflow: hidden;">
-              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: 92%;"></div>
+              @php $avgPercent = min(100, ($avgResponseTime ?? 0) / 10 * 100); @endphp
+              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: {{ $avgPercent }}%;"></div>
             </div>
-            <p class="text-muted text-sm mt-2 mb-0">Below SLA target</p>
+            <p class="text-muted text-sm mt-2 mb-0">{{ ($avgResponseTime ?? 0) < 5 ? 'Below SLA target' : 'Above SLA target' }}</p>
           </div>
+          
           <div class="mb-3">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <h6 class="text-muted">Detection Success</h6>
-              <span style="color: #5864FF; font-weight: 600;">99.2%</span>
+              <span style="color: #5864FF; font-weight: 600;">{{ number_format($detectionSuccess ?? 0, 1) }}%</span>
             </div>
             <div style="height: 6px; background: #E6F0FF; border-radius: 3px; overflow: hidden;">
-              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: 99.2%;"></div>
+              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: {{ min(100, $detectionSuccess ?? 0) }}%;"></div>
             </div>
-            <p class="text-muted text-sm mt-2 mb-0">Excellent accuracy</p>
+            <p class="text-muted text-sm mt-2 mb-0">{{ ($detectionSuccess ?? 0) > 95 ? 'Excellent accuracy' : 'Needs improvement' }}</p>
           </div>
+          
           <div class="mb-3">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <h6 class="text-muted">Mean Time to Resolution</h6>
-              <span style="color: #5864FF; font-weight: 600;">5.7m</span>
+              <span style="color: #5864FF; font-weight: 600;">{{ number_format($meanTimeToResolution ?? 0, 1) }}m</span>
             </div>
             <div style="height: 6px; background: #E6F0FF; border-radius: 3px; overflow: hidden;">
-              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: 85%;"></div>
+              @php $mttrPercent = min(100, ($meanTimeToResolution ?? 0) / 10 * 100); @endphp
+              <div style="height: 100%; background: linear-gradient(90deg, #5864FF, #4356E6); width: {{ $mttrPercent }}%;"></div>
             </div>
-            <p class="text-muted text-sm mt-2 mb-0">Within response window</p>
+            <p class="text-muted text-sm mt-2 mb-0">{{ ($meanTimeToResolution ?? 0) < 10 ? 'Within response window' : 'Exceeds response window' }}</p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Top 5 Sources -->
     <div class="col-md-12 col-xl-8">
       <h5 class="mb-3">Top 5 Sources</h5>
       <div class="card tbl-card">
@@ -191,34 +214,33 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td style="padding: 16px;">192.0.2.10</td>
-                  <td style="padding: 16px;">92,410</td>
-                  <td style="padding: 16px;">UDP</td>
-                  <td style="padding: 16px;"><span style="color: #7f1d1d; font-weight: 600;">94%</span></td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fee2e2; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Attack</span></td>
-                </tr>
-                <tr>
-                  <td style="padding: 16px;">203.0.113.44</td>
-                  <td style="padding: 16px;">78,120</td>
-                  <td style="padding: 16px;">HTTP</td>
-                  <td style="padding: 16px;"><span style="color: #7f1d1d; font-weight: 600;">88%</span></td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fee2e2; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Attack</span></td>
-                </tr>
-                <tr>
-                  <td style="padding: 16px;">198.51.100.77</td>
-                  <td style="padding: 16px;">41,980</td>
-                  <td style="padding: 16px;">TCP</td>
-                  <td style="padding: 16px;"><span style="color: #b45309; font-weight: 600;">62%</span></td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Suspicious</span></td>
-                </tr>
-                <tr>
-                  <td style="padding: 16px;">10.23.1.18</td>
-                  <td style="padding: 16px;">18,400</td>
-                  <td style="padding: 16px;">TCP</td>
-                  <td style="padding: 16px;"><span style="color: #16a34a; font-weight: 600;">18%</span></td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Normal</span></td>
-                </tr>
+                @forelse($topSources as $source)
+                  <tr>
+                    <td style="padding: 16px; font-family: monospace;">{{ $source->source_ip ?? 'Unknown' }}</td>
+                    <td style="padding: 16px;">{{ number_format($source->count ?? 0) }}</td>
+                    <td style="padding: 16px;">{{ $source->protocol ?? 'Unknown' }}</td>
+                    <td style="padding: 16px;">
+                      <span style="color: {{ ($source->max_score ?? 0) > 80 ? '#7f1d1d' : (($source->max_score ?? 0) > 50 ? '#b45309' : '#16a34a') }}; font-weight: 600;">
+                        {{ number_format($source->max_score ?? 0, 0) }}%
+                      </span>
+                    </td>
+                    <td style="padding: 16px; text-align: center;" align="center">
+                      @php
+                        $score = $source->max_score ?? 0;
+                        $class = $score > 80 ? 'Attack' : ($score > 50 ? 'Suspicious' : 'Normal');
+                        $bgColor = $score > 80 ? '#fee2e2' : ($score > 50 ? '#fef3c7' : '#dcfce7');
+                        $textColor = $score > 80 ? '#7f1d1d' : ($score > 50 ? '#92400e' : '#166534');
+                      @endphp
+                      <span style="background: {{ $bgColor }}; color: {{ $textColor }}; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">
+                        {{ $class }}
+                      </span>
+                    </td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #9ca3af;">No data available</td>
+                  </tr>
+                @endforelse
               </tbody>
             </table>
           </div>
@@ -226,6 +248,7 @@
       </div>
     </div>
 
+    <!-- Protocol Distribution -->
     <div class="col-md-12 col-xl-4">
       <h5 class="mb-3">Protocol Distribution</h5>
       <div class="card">
@@ -247,73 +270,40 @@
                   <th style="padding: 12px 16px; font-weight: 600; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">TIMESTAMP</th>
                   <th style="padding: 12px 16px; font-weight: 600; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">EVENT</th>
                   <th style="padding: 12px 16px; font-weight: 600; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">SOURCE</th>
-                  <th style="padding: 12px 16px; font-weight: 600; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">IMPACT</th>
+                  <th style="padding: 12px 16px; font-weight: 600; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">SEVERITY</th>
                 </tr>
               </thead>
               <tbody id="activity-tbody">
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 14:23:45</td>
-                  <td style="padding: 16px;">UDP Flood Detected</td>
-                  <td style="padding: 16px;">192.0.2.10</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fee2e2; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Critical</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 14:18:32</td>
-                  <td style="padding: 16px;">HTTP Anomaly Flagged</td>
-                  <td style="padding: 16px;">203.0.113.44</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fecaca; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">High</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 14:12:10</td>
-                  <td style="padding: 16px;">Port Scan Detected</td>
-                  <td style="padding: 16px;">198.51.100.77</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Medium</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 14:05:28</td>
-                  <td style="padding: 16px;">TCP Connection Established</td>
-                  <td style="padding: 16px;">10.23.1.18</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #dbeafe; color: #0c4a6e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Low</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 13:58:15</td>
-                  <td style="padding: 16px;">DNS Query Flood</td>
-                  <td style="padding: 16px;">155.89.12.47</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fecaca; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">High</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 13:45:42</td>
-                  <td style="padding: 16px;">SYN Scan Attempt</td>
-                  <td style="padding: 16px;">172.16.0.50</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fee2e2; color: #7f1d1d; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Critical</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 13:32:20</td>
-                  <td style="padding: 16px;">ICMP Request Flood</td>
-                  <td style="padding: 16px;">210.45.30.88</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Medium</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 13:21:05</td>
-                  <td style="padding: 16px;">Protocol Violation</td>
-                  <td style="padding: 16px;">98.12.67.34</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #dbeafe; color: #0c4a6e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Low</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 13:08:33</td>
-                  <td style="padding: 16px;">Traffic Spike Detected</td>
-                  <td style="padding: 16px;">145.80.20.15</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Medium</span></td>
-                </tr>
-                <tr class="activity-row">
-                  <td style="padding: 16px;">2026-06-26 12:55:47</td>
-                  <td style="padding: 16px;">Router Configuration Change</td>
-                  <td style="padding: 16px;">System</td>
-                  <td style="padding: 16px; text-align: center;" align="center"><span style="background: #dbeafe; color: #0c4a6e; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">Low</span></td>
-                </tr>
+                @forelse($recentActivities as $activity)
+                  <tr class="activity-row">
+                    <td style="padding: 16px;">{{ $activity->occurred_at?->format('Y-m-d H:i:s') ?? 'N/A' }}</td>
+                    <td style="padding: 16px;">{{ $activity->attack_type ?? 'Unknown' }}</td>
+                    <td style="padding: 16px; font-family: monospace;">{{ $activity->source_ip ?? 'Unknown' }}</td>
+                    <td style="padding: 16px; text-align: center;" align="center">
+                      @php
+                        $severity = strtolower($activity->severity ?? 'low');
+                        $severityClass = match($severity) {
+                          'critical' => 'severity-critical',
+                          'high' => 'severity-high',
+                          'medium' => 'severity-medium',
+                          'low' => 'severity-low',
+                          default => 'severity-low'
+                        };
+                      @endphp
+                      <span class="{{ $severityClass }}" style="padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block;">
+                        {{ ucfirst($activity->severity ?? 'Low') }}
+                      </span>
+                    </td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="4" style="padding: 20px; text-align: center; color: #9ca3af;">No recent activity</td>
+                  </tr>
+                @endforelse
               </tbody>
             </table>
           </div>
+          @if($recentActivities->count() > 5)
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
             <div style="font-size: 12px; color: #9ca3af;">
               Page <span id="current-page">1</span> of <span id="total-pages">2</span>
@@ -323,6 +313,7 @@
               <button id="next-btn" style="padding: 6px 12px; border: 1px solid #5864FF; border-radius: 4px; background: #5864FF; color: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Next</button>
             </div>
           </div>
+          @endif
         </div>
       </div>
     </div>
@@ -332,6 +323,13 @@
 @push('scripts')
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      // Get data from PHP
+      const trafficCategories = @json($trafficCategories ?? []);
+      const normalFlows = @json($normalFlows ?? []);
+      const suspiciousFlows = @json($suspiciousFlows ?? []);
+      const protocolLabels = @json($protocolLabels ?? []);
+      const protocolValues = @json($protocolValues ?? []);
+
       // Pagination for Recent Activity
       const rowsPerPage = 5;
       const rows = document.querySelectorAll('.activity-row');
@@ -339,70 +337,76 @@
       const totalPages = Math.ceil(totalRows / rowsPerPage);
       let currentPage = 1;
 
-      function showPage(page) {
-        const startIndex = (page - 1) * rowsPerPage;
-        const endIndex = startIndex + rowsPerPage;
+      if (totalPages > 1) {
+        function showPage(page) {
+          const startIndex = (page - 1) * rowsPerPage;
+          const endIndex = startIndex + rowsPerPage;
 
-        rows.forEach((row, index) => {
-          row.style.display = index >= startIndex && index < endIndex ? '' : 'none';
+          rows.forEach((row, index) => {
+            row.style.display = index >= startIndex && index < endIndex ? '' : 'none';
+          });
+
+          document.getElementById('current-page').textContent = page;
+          document.getElementById('total-pages').textContent = totalPages;
+          
+          const prevBtn = document.getElementById('prev-btn');
+          const nextBtn = document.getElementById('next-btn');
+          
+          prevBtn.disabled = page === 1;
+          nextBtn.disabled = page === totalPages;
+          prevBtn.style.opacity = page === 1 ? '0.5' : '1';
+          prevBtn.style.cursor = page === 1 ? 'not-allowed' : 'pointer';
+          nextBtn.style.opacity = page === totalPages ? '0.5' : '1';
+          nextBtn.style.cursor = page === totalPages ? 'not-allowed' : 'pointer';
+        }
+
+        document.getElementById('prev-btn').addEventListener('click', function() {
+          if (currentPage > 1) {
+            currentPage--;
+            showPage(currentPage);
+          }
         });
 
-        document.getElementById('current-page').textContent = page;
-        document.getElementById('total-pages').textContent = totalPages;
-        document.getElementById('prev-btn').disabled = page === 1;
-        document.getElementById('next-btn').disabled = page === totalPages;
-        
-        if (page === 1) {
-          document.getElementById('prev-btn').style.opacity = '0.5';
-          document.getElementById('prev-btn').style.cursor = 'not-allowed';
-        } else {
-          document.getElementById('prev-btn').style.opacity = '1';
-          document.getElementById('prev-btn').style.cursor = 'pointer';
-        }
-        
-        if (page === totalPages) {
-          document.getElementById('next-btn').style.opacity = '0.5';
-          document.getElementById('next-btn').style.cursor = 'not-allowed';
-        } else {
-          document.getElementById('next-btn').style.opacity = '1';
-          document.getElementById('next-btn').style.cursor = 'pointer';
-        }
+        document.getElementById('next-btn').addEventListener('click', function() {
+          if (currentPage < totalPages) {
+            currentPage++;
+            showPage(currentPage);
+          }
+        });
+
+        showPage(currentPage);
       }
 
-      document.getElementById('prev-btn').addEventListener('click', function() {
-        if (currentPage > 1) {
-          currentPage--;
-          showPage(currentPage);
-        }
-      });
-
-      document.getElementById('next-btn').addEventListener('click', function() {
-        if (currentPage < totalPages) {
-          currentPage++;
-          showPage(currentPage);
-        }
-      });
-
-      showPage(currentPage);
+      // Traffic Analysis Chart
       new ApexCharts(document.querySelector('#analysis-chart'), {
-        chart: { height: 450, type: 'area', toolbar: { show: false } },
+        chart: { height: 450, type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
         dataLabels: { enabled: false },
         colors: ['#4356E6', '#ff4d4f'],
         series: [
-          { name: 'Normal Flows', data: [31, 40, 28, 51, 42, 109, 100, 95, 88, 103, 110, 118] },
-          { name: 'Suspicious Flows', data: [11, 32, 45, 32, 34, 52, 41, 70, 64, 58, 42, 35] }
+          { name: 'Normal Flows', data: normalFlows.length > 0 ? normalFlows : Array(12).fill(0) },
+          { name: 'Suspicious Flows', data: suspiciousFlows.length > 0 ? suspiciousFlows : Array(12).fill(0) }
         ],
         stroke: { curve: 'smooth', width: 2 },
-        xaxis: { categories: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] }
+        xaxis: { categories: trafficCategories.length > 0 ? trafficCategories : Array(12).fill('00:00') },
+        grid: { strokeDashArray: 4 },
+        legend: { position: 'top', horizontalAlign: 'right' }
       }).render();
 
+      // Protocol Distribution Chart
       new ApexCharts(document.querySelector('#protocol-chart'), {
-        chart: { height: 320, type: 'donut' },
-        series: [62, 28, 10],
-        labels: ['TCP', 'UDP', 'ICMP'],
-        colors: ['#5864FF', '#4356E6', '#faad14'],
+        chart: { height: 320, type: 'donut', toolbar: { show: false } },
+        series: protocolValues.length > 0 ? protocolValues : [0],
+        labels: protocolLabels.length > 0 ? protocolLabels : ['No Data'],
+        colors: ['#5864FF', '#4356E6', '#faad14', '#ff6b6b', '#6d28d9'],
         dataLabels: { enabled: true, formatter: function(val) { return val.toFixed(1) + '%' } },
-        legend: { position: 'bottom' }
+        legend: { position: 'bottom' },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '65%'
+            }
+          }
+        }
       }).render();
 
       const protocolNote = document.createElement('p');
