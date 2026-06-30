@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Models\SystemUptime;
 
 Route::get('/', function () {
     return auth()->check()
@@ -21,9 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
         Route::get('/alert', function () {
             return view('admin.alert');
@@ -42,3 +42,21 @@ Route::middleware('auth')->group(function () {
         })->name('settings');
     });
 });
+
+Route::get('/api/uptime', function () {
+    $uptime = SystemUptime::first();
+    
+    if (!$uptime) {
+        return response()->json([
+            'seconds' => 0,
+            'formatted' => '00:00:00',
+            'started_at' => null
+        ]);
+    }
+    
+    return response()->json([
+        'seconds' => $uptime->getUptimeSeconds(),
+        'formatted' => $uptime->getUptimeFormatted(),
+        'started_at' => $uptime->started_at?->format('M d, H:i:s')
+    ]);
+})->name('api.uptime');
