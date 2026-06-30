@@ -569,7 +569,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon red"><i class="ti ti-alert-octagon"></i></div>
                 <div class="stat-label">Critical Alerts</div>
-                <div class="stat-value text-critical" id="critical-count">24</div>
+                <div class="stat-value text-critical" id="critical-count">{{ $criticalCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #fee2e2; color: #7f1d1d;">Needs review</span>
                 <div class="stat-description">Highest risk incidents</div>
             </div>
@@ -580,7 +580,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon orange"><i class="ti ti-alert-triangle"></i></div>
                 <div class="stat-label">High Severity</div>
-                <div class="stat-value text-high" id="high-count">48</div>
+                <div class="stat-value text-high" id="high-count">{{ ($highCount ?? 0) + ($criticalCount ?? 0) }}</div>
                 <span class="stat-badge" style="background: #fef3c7; color: #92400e;">Active</span>
                 <div class="stat-description">Traffic spikes under watch</div>
             </div>
@@ -591,7 +591,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon blue"><i class="ti ti-shield-check"></i></div>
                 <div class="stat-label">Acknowledged</div>
-                <div class="stat-value text-acknowledged" id="acknowledged-count">1</div>
+                <div class="stat-value text-acknowledged" id="acknowledged-count">{{ $acknowledgedCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #dbeafe; color: #0c4a6e;">Tracked</span>
                 <div class="stat-description">Assigned to operator</div>
             </div>
@@ -602,7 +602,7 @@
             <div class="card-body p-4">
                 <div class="stat-icon green"><i class="ti ti-check"></i></div>
                 <div class="stat-label">Resolved</div>
-                <div class="stat-value text-resolved" id="resolved-count">1,847</div>
+                <div class="stat-value text-resolved" id="resolved-count">{{ $resolvedCount ?? 0 }}</div>
                 <span class="stat-badge" style="background: #dcfce7; color: #166534;">Closed</span>
                 <div class="stat-description">Successfully mitigated</div>
             </div>
@@ -671,9 +671,9 @@
 <div class="row">
     <div class="col-12">
         <div class="table-header-toolbar">
-            <h5>Detected Attack Alerts <span class="alert-badge-title" id="title-badge">4</span></h5>
+            <h5>Detected Attack Alerts <span class="alert-badge-title" id="title-badge">{{ $alerts->count() }}</span></h5>
             <div class="toolbar-right">
-                <span class="alert-count-badge">Showing <span id="alert-count">4</span> alerts</span>
+                <span class="alert-count-badge">Showing <span id="alert-count">{{ $alerts->count() }}</span> alerts</span>
                 <div class="refresh-controls">
                     <span class="refresh-indicator" id="refresh-indicator"></span>
                     <select id="refresh-interval">
@@ -707,70 +707,75 @@
                             </tr>
                         </thead>
                         <tbody id="alert-tbody">
-                            <tr class="alert-row" data-severity="critical" data-status="open" data-type="udp" data-id="1" onclick="openDetailModal(this)">
+                            @forelse($alerts as $alert)
+                            @php
+                                $severity = strtolower($alert->severity ?? 'low');
+                                $status = $alert->status ?? 'open';
+                                $statusMap = [
+                                    'open' => ['class' => 'open', 'label' => 'Open'],
+                                    'investigating' => ['class' => 'investigating', 'label' => 'Investigating'],
+                                    'acknowledged' => ['class' => 'acknowledged', 'label' => 'Acknowledged'],
+                                    'resolved' => ['class' => 'resolved', 'label' => 'Resolved'],
+                                ];
+                                $statusData = $statusMap[$status] ?? $statusMap['open'];
+                                $slaMinutes = $alert->sla_minutes ?? 10;
+                                $elapsed = $alert->occurred_at ? now()->diffInMinutes($alert->occurred_at) : 0;
+                                $slaClass = $elapsed > $slaMinutes ? 'critical' : ($elapsed > $slaMinutes * 0.7 ? 'warning' : 'safe');
+                            @endphp
+                            <tr class="alert-row" 
+                                data-severity="{{ $severity }}" 
+                                data-status="{{ $status }}" 
+                                data-type="{{ strtolower($alert->attack_type ?? 'unknown') }}" 
+                                data-id="{{ $alert->id }}" 
+                                onclick="openDetailModal(this)">
                                 <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td class="time-cell">2 min ago</td>
-                                <td>UDP Amplification</td>
-                                <td><span class="ip-address">10.23.1.18</span></td>
-                                <td><span class="ip-address">172.16.0.12</span></td>
-                                <td style="text-align:center;"><span class="severity-badge critical">Critical</span></td>
-                                <td style="text-align:center;"><span class="status-badge open"><span class="status-dot"></span> Open</span></td>
-                                <td style="text-align:center;"><span class="sla-timer warning" data-start="2026-06-27T14:23:45">2m 30s / 5m</span></td>
+                                <td class="time-cell">{{ $alert->occurred_at?->diffForHumans() ?? 'N/A' }}</td>
+                                <td>{{ $alert->attack_type ?? 'Unknown' }}</td>
+                                <td><span class="ip-address">{{ $alert->source_ip ?? '—' }}</span></td>
+                                <td><span class="ip-address">{{ $alert->target_ip ?? '—' }}</span></td>
                                 <td style="text-align:center;">
-                                    <a href="{{ url('/mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>
+                                    <span class="severity-badge {{ $severity }}">{{ ucfirst($severity) }}</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="status-badge {{ $statusData['class'] }}"><span class="status-dot"></span> {{ $statusData['label'] }}</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="sla-timer {{ $slaClass }}" data-start="{{ $alert->occurred_at }}">
+                                        {{ $elapsed }}m / {{ $slaMinutes }}m
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    @if($status === 'resolved')
+                                        <span class="text-resolved-label">Resolved</span>
+                                    @else
+                                        <a href="{{ route('admin.mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>
+                                    @endif
                                 </td>
                             </tr>
-                            <tr class="alert-row" data-severity="high" data-status="investigating" data-type="http" data-id="2" onclick="openDetailModal(this)">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td class="time-cell">7 min ago</td>
-                                <td>HTTP Flood</td>
-                                <td><span class="ip-address">203.0.113.44</span></td>
-                                <td><span class="ip-address">172.16.0.12</span></td>
-                                <td style="text-align:center;"><span class="severity-badge high">High</span></td>
-                                <td style="text-align:center;"><span class="status-badge investigating"><span class="status-dot"></span> Investigating</span></td>
-                                <td style="text-align:center;"><span class="sla-timer warning" data-start="2026-06-27T14:18:32">7m 10s / 10m</span></td>
-                                <td style="text-align:center;">
-                                    <a href="{{ url('/mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>
+                            @empty
+                            <tr>
+                                <td colspan="9" style="padding: 40px; text-align: center; color: #9ca3af;">
+                                    <i class="ti ti-check" style="font-size: 48px; display: block; margin-bottom: 12px;"></i>
+                                    No alerts found
                                 </td>
                             </tr>
-                            <tr class="alert-row" data-severity="medium" data-status="acknowledged" data-type="syn" data-id="3" onclick="openDetailModal(this)">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td class="time-cell">16 min ago</td>
-                                <td>SYN Scan</td>
-                                <td><span class="ip-address">198.51.100.77</span></td>
-                                <td><span class="ip-address">172.16.0.18</span></td>
-                                <td style="text-align:center;"><span class="severity-badge medium">Medium</span></td>
-                                <td style="text-align:center;"><span class="status-badge acknowledged"><span class="status-dot"></span> Acknowledged</span></td>
-                                <td style="text-align:center;"><span class="sla-timer safe" data-start="2026-06-27T14:12:10">16m / 30m</span></td>
-                                <td style="text-align:center;">
-                                    <a href="{{ url('/mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>
-                                </td>
-                            </tr>
-                            <tr class="alert-row" data-severity="low" data-status="resolved" data-type="probing" data-id="4" onclick="openDetailModal(this)">
-                                <td onclick="event.stopPropagation();"><input type="checkbox" class="bulk-checkbox row-checkbox" onchange="updateBulkBar()"></td>
-                                <td class="time-cell">31 min ago</td>
-                                <td>Low-rate Probing</td>
-                                <td><span class="ip-address">192.0.2.88</span></td>
-                                <td><span class="ip-address">172.16.0.12</span></td>
-                                <td style="text-align:center;"><span class="severity-badge low">Low</span></td>
-                                <td style="text-align:center;"><span class="status-badge resolved"><span class="status-dot"></span> Resolved</span></td>
-                                <td style="text-align:center;"><span class="sla-timer safe">31m / 30m</span></td>
-                                <td style="text-align:center;"><span class="text-resolved-label">Resolved</span></td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        @if($alerts->count() > 5)
         <div class="pagination-wrapper">
-            <span class="page-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+            <span class="page-info">Page <span id="current-page">1</span> of <span id="total-pages">{{ ceil($alerts->count() / 5) }}</span></span>
             <div class="page-buttons">
                 <button id="prev-page" onclick="changePage(-1)">Previous</button>
                 <button id="page-1" class="active" onclick="goToPage(1)">1</button>
                 <button id="next-page" onclick="changePage(1)">Next</button>
             </div>
         </div>
+        @endif
     </div>
 </div>
 
@@ -783,37 +788,37 @@
                     <div class="severity-bar-item">
                         <div class="bar-row">
                             <span class="bar-label" style="color: #7f1d1d;">Critical</span>
-                            <span class="bar-count" id="chart-critical">24</span>
+                            <span class="bar-count" id="chart-critical">{{ $criticalTotal ?? 0 }}</span>
                         </div>
                         <div class="bar-track">
-                            <div class="bar-fill critical" id="chart-critical-bar" style="width:15%;"></div>
+                            <div class="bar-fill critical" id="chart-critical-bar" style="width:{{ $maxSeverity > 0 ? round(($criticalTotal / $maxSeverity) * 100) : 0 }}%;"></div>
                         </div>
                     </div>
                     <div class="severity-bar-item">
                         <div class="bar-row">
                             <span class="bar-label" style="color: #92400e;">High</span>
-                            <span class="bar-count" id="chart-high">48</span>
+                            <span class="bar-count" id="chart-high">{{ $highTotal ?? 0 }}</span>
                         </div>
                         <div class="bar-track">
-                            <div class="bar-fill high" id="chart-high-bar" style="width:30%;"></div>
+                            <div class="bar-fill high" id="chart-high-bar" style="width:{{ $maxSeverity > 0 ? round(($highTotal / $maxSeverity) * 100) : 0 }}%;"></div>
                         </div>
                     </div>
                     <div class="severity-bar-item">
                         <div class="bar-row">
                             <span class="bar-label" style="color: #0c4a6e;">Medium</span>
-                            <span class="bar-count" id="chart-medium">342</span>
+                            <span class="bar-count" id="chart-medium">{{ $mediumTotal ?? 0 }}</span>
                         </div>
                         <div class="bar-track">
-                            <div class="bar-fill medium" id="chart-medium-bar" style="width:60%;"></div>
+                            <div class="bar-fill medium" id="chart-medium-bar" style="width:{{ $maxSeverity > 0 ? round(($mediumTotal / $maxSeverity) * 100) : 0 }}%;"></div>
                         </div>
                     </div>
                     <div class="severity-bar-item">
                         <div class="bar-row">
                             <span class="bar-label" style="color: #166534;">Low</span>
-                            <span class="bar-count" id="chart-low">1,847</span>
+                            <span class="bar-count" id="chart-low">{{ $lowTotal ?? 0 }}</span>
                         </div>
                         <div class="bar-track">
-                            <div class="bar-fill low" id="chart-low-bar" style="width:90%;"></div>
+                            <div class="bar-fill low" id="chart-low-bar" style="width:{{ $maxSeverity > 0 ? round(($lowTotal / $maxSeverity) * 100) : 0 }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -827,19 +832,19 @@
                 <h6 class="mb-3">Alert Response Metrics</h6>
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <div class="number" style="color: #5864FF;">92%</div>
+                        <div class="number" style="color: #5864FF;">{{ $responseRate ?? 0 }}%</div>
                         <div class="label">Avg Response Rate</div>
                     </div>
                     <div class="stat-box">
-                        <div class="number" style="color: #16a34a;">4.2m</div>
-                        <div class="label">Mean Time to Acknowledge</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="number" style="color: #d97706;">8.7m</div>
+                        <div class="number" style="color: #16a34a;">{{ number_format($avgTimeToResolve ?? 0, 1) }}m</div>
                         <div class="label">Mean Time to Resolve</div>
                     </div>
                     <div class="stat-box">
-                        <div class="number" style="color: #6b7280;">3.2%</div>
+                        <div class="number" style="color: #d97706;">{{ number_format($avgResponseTime ?? 0, 1) }}m</div>
+                        <div class="label">Mean Time to Acknowledge</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" style="color: #6b7280;">{{ $falsePositiveRate ?? 0 }}%</div>
                         <div class="label">False Positive Rate</div>
                     </div>
                 </div>
@@ -848,6 +853,7 @@
     </div>
 </div>
 
+<!-- Modal -->
 <div class="modal-overlay" id="detail-modal" onclick="if(event.target===this) closeDetailModal()">
     <div class="modal-box">
         <div class="modal-header">
@@ -870,7 +876,7 @@
                 <div class="value" id="modal-description">This alert was triggered by suspicious network activity matching the attack pattern. Immediate investigation recommended.</div>
             </div>
             <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-                <button class="btn-mitigate" onclick="closeDetailModal(); window.location.href='{{ url('/mitigation') }}'">Go to Mitigation</button>
+                <button class="btn-mitigate" onclick="closeDetailModal(); window.location.href='{{ route('admin.mitigation') }}'">Go to Mitigation</button>
                 <button class="bulk-btn acknowledge" onclick="closeDetailModal(); updateStatusFromModal('acknowledged')">Acknowledge</button>
                 <button class="bulk-btn resolve" onclick="closeDetailModal(); updateStatusFromModal('resolved')">Resolve</button>
                 <button class="bulk-btn" style="background:#f3f4f6;color:#6b7280;" onclick="closeDetailModal()">Close</button>
@@ -917,6 +923,7 @@
                 });
             }
         });
+        updateStatCounts();
     }
 
     function applyFilters() {
@@ -1054,6 +1061,8 @@
         document.getElementById('high-count').textContent = high + critical;
         document.getElementById('acknowledged-count').textContent = ack;
         document.getElementById('resolved-count').textContent = resolved;
+        
+        // Update severity chart
         const c = parseInt(document.getElementById('chart-critical')?.textContent || 0);
         const h = parseInt(document.getElementById('chart-high')?.textContent || 0);
         const m = parseInt(document.getElementById('chart-medium')?.textContent || 0);
@@ -1186,7 +1195,7 @@
             if (newStatus === 'resolved') {
                 actionCell.innerHTML = '<span class="text-resolved-label">Resolved</span>';
             } else {
-                actionCell.innerHTML = `<a href="{{ url('/mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>`;
+                actionCell.innerHTML = `<a href="{{ route('admin.mitigation') }}" class="btn-mitigate" onclick="event.stopPropagation();">Mitigate</a>`;
             }
         }
         updateStatCounts();
@@ -1214,21 +1223,25 @@
         document.getElementById('modal-target').textContent = cells[4]?.textContent?.trim() || '—';
         document.getElementById('modal-time').textContent = cells[1]?.textContent?.trim() || '—';
         document.getElementById('modal-id').textContent = row.dataset.id || '—';
+        
         const sev = row.dataset.severity || 'low';
         const sevLabel = sev.charAt(0).toUpperCase() + sev.slice(1);
         document.getElementById('modal-severity').innerHTML = `<span class="severity-badge ${sev}">${sevLabel}</span>`;
+        
         const stat = row.dataset.status || 'open';
         const statMap = { 'open':'Open', 'investigating':'Investigating', 'acknowledged':'Acknowledged', 'resolved':'Resolved' };
         document.getElementById('modal-status').innerHTML = `<span class="status-badge ${stat}"><span class="status-dot"></span> ${statMap[stat] || stat}</span>`;
+        
         const slaEl = cells[7]?.querySelector('.sla-timer');
         document.getElementById('modal-sla').textContent = slaEl ? slaEl.textContent : '—';
-        const desc = {
+        
+        const descMap = {
             'udp': 'This alert was triggered by a UDP amplification attack. The source IP is flooding the target with large UDP packets, overwhelming network bandwidth.',
             'http': 'This alert was triggered by an HTTP flood attack. Multiple HTTP requests are being sent to the target server, exhausting application resources.',
             'syn': 'This alert was triggered by a SYN scan attack. The source IP is sending SYN packets to multiple ports, attempting to discover open services.',
             'probing': 'This alert was triggered by low-rate probing. The source IP is sending periodic requests to map network topology and identify vulnerabilities.'
         };
-        document.getElementById('modal-description').textContent = desc[row.dataset.type] || 'This alert was triggered by suspicious network activity matching the attack pattern. Immediate investigation recommended.';
+        document.getElementById('modal-description').textContent = descMap[row.dataset.type] || 'This alert was triggered by suspicious network activity matching the attack pattern. Immediate investigation recommended.';
         document.getElementById('detail-modal').classList.add('show');
     }
 
